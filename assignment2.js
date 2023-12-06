@@ -6,43 +6,7 @@ const {
     Vector, Vector3, vec, vec3, vec4, color, hex_color, Matrix, Mat4, Light, Shape, Material, Scene, Texture
 } = tiny;
 
-class Cube extends Shape {
-    constructor() {
-        super("position", "normal",);
-        // Loop 3 times (for each axis), and inside loop twice (for opposing cube sides):
-        this.arrays.position = Vector3.cast(
-            [-1, -1, -1], [1, -1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, -1], [-1, 1, -1], [1, 1, 1], [-1, 1, 1],
-            [-1, -1, -1], [-1, -1, 1], [-1, 1, -1], [-1, 1, 1], [1, -1, 1], [1, -1, -1], [1, 1, 1], [1, 1, -1],
-            [-1, -1, 1], [1, -1, 1], [-1, 1, 1], [1, 1, 1], [1, -1, -1], [-1, -1, -1], [1, 1, -1], [-1, 1, -1]);
-        this.arrays.normal = Vector3.cast(
-            [0, -1, 0], [0, -1, 0], [0, -1, 0], [0, -1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0],
-            [-1, 0, 0], [-1, 0, 0], [-1, 0, 0], [-1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0], [1, 0, 0],
-            [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, -1], [0, 0, -1], [0, 0, -1], [0, 0, -1]);
-        // Arrange the vertices into a square shape in texture space too:
-        this.indices.push(0, 1, 2, 1, 3, 2, 4, 5, 6, 5, 7, 6, 8, 9, 10, 9, 11, 10, 12, 13,
-            14, 13, 15, 14, 16, 17, 18, 17, 19, 18, 20, 21, 22, 21, 23, 22);
-    }
-}
-
-class Cube_Outline extends Shape {
-    constructor() {
-        super("position", "color");
-        //  TODO (Requirement 5).
-        // When a set of lines is used in graphics, you should think of the list entries as
-        // broken down into pairs; each pair of vertices will be drawn as a line segment.
-        // Note: since the outline is rendered with Basic_shader, you need to redefine the position and color of each vertex
-    }
-}
-
-class Cube_Single_Strip extends Shape {
-    constructor() {
-        super("position", "normal");
-        // TODO (Requirement 6)
-    }
-}
-
-
-class Base_Scene extends Scene {
+export class Base_Scene extends Scene {
     /**
      *  **Base_scene** is a Scene that can be added to any display canvas.
      *  Setup the shapes, materials, camera, and lighting here.
@@ -53,8 +17,7 @@ class Base_Scene extends Scene {
         this.hover = this.swarm = false;
         // At the beginning of our program, load one of each of these shape definitions onto the GPU.
         this.shapes = {
-            'cube': new Cube(),
-            'outline': new Cube_Outline(),
+            'cube': new defs.Cube(),
             'picnic': new Shape_From_File("assets/picnic_table.obj"),
             'tree1': new Shape_From_File("assets/Tree1.obj"),
             'houses1': new Shape_From_File("assets/houses1.obj"),
@@ -91,7 +54,7 @@ class Base_Scene extends Scene {
             zoo_text: new Material(new defs.Textured_Phong(1),
                 {ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("assets/text.png")}),
             path: new Material(new defs.Phong_Shader(),
-            {ambient: 0.9, diffusivity: 0.1, specularity: 0, color: hex_color("#c9af7b")}),
+                {ambient: 0.9, diffusivity: 0.1, specularity: 0, color: hex_color("#c9af7b")}),
             miffy: new Material(new defs.Phong_Shader(),{
                 ambient:.9, diffusivity: .1, specularity: 0, color: hex_color("#FFFFFF")}),
             text_image: new Material(new defs.Textured_Phong(),
@@ -99,8 +62,20 @@ class Base_Scene extends Scene {
 
 
         };
-        // The white material and basic shader are used for drawing the outline.
-        this.white = new Material(new defs.Basic_Shader());
+
+        // *** FLAGS
+        this.title = true;
+        this.first_scene = false;
+    }
+
+    make_control_panel() {
+
+        this.key_triggered_button("Enter", ['Enter'], () => {
+            if (this.title) {
+                this.title = false;
+                this.first_scene = true;
+            }
+        });
     }
 
     display(context, program_state) {
@@ -353,47 +328,7 @@ class Base_Scene extends Scene {
         // this.shapes.cube.draw(context,program_state, miffy_transform.times(Mat4.scale(.2,.05,.02)
         //     .times(Mat4.translation(0,-.02,1))
         //     .times(Mat4.rotation(Math.PI/4, 0, 0, 1))))
-    }
-}
 
-export class Assignment2 extends Base_Scene {
-
-    constructor() {
-        super();
-        this.title = true;
-        this.first_scene = false;
-
-    }
-
-
-    make_control_panel() {
-        // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-        this.key_triggered_button("Change Colors", ["c"], this.set_colors);
-        // Add a button for controlling the scene.
-        this.key_triggered_button("Outline", ["o"], () => {
-            // TODO:  Requirement 5b:  Set a flag here that will toggle your outline on and off
-        });
-        this.key_triggered_button("Sit still", ["m"], () => {
-            // TODO:  Requirement 3d:  Set a flag here that will toggle your swaying motion on and off.
-        });
-        this.key_triggered_button("Enter", ['Enter'], () => {
-            if (this.title) {
-                this.title = false;
-                this.first_scene = true;
-            }
-        });
-    }
-
-
-    draw_title(context, program_state) {
-        //program_state.set_camera(Mat4.look_at(vec3(0, 0, 50), vec3(0, 0, 0), vec3(0, 1, 0)));
-        // let desired = Mat4.look_at(vec3(0, 0, 50), vec3(0, 0, 0), vec3(0, 1, 0));
-        // desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.01))
-        // this.title = false;
-    }
-
-    display(context, program_state) {
-        super.display(context, program_state);
         const t = program_state.animation_time / 1000;
         if (this.title) {
             program_state.set_camera(Mat4.look_at(vec3(10, 55, 30), vec3(10, 55, 0), vec3(0, 1, 0)));
