@@ -65,8 +65,8 @@ class Base_Scene extends Scene {
             'fence2': new Shape_From_File("assets/fence2.obj"),
             'torus': new defs.Torus(50, 50),
             'zoo_text': new Text_Line(10),
-            'miffy': new Shape_From_File("assets/mif.obj")
-            'text': new Text_Line(35),
+            'miffy': new Shape_From_File("assets/mif.obj"),
+            'text': new Text_Line(35)
 
         };
 
