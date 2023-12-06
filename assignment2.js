@@ -65,7 +65,9 @@ class Base_Scene extends Scene {
             'fence2': new Shape_From_File("assets/fence2.obj"),
             'torus': new defs.Torus(50, 50),
             'zoo_text': new Text_Line(10),
+            'miffy': new Shape_From_File("assets/mif.obj")
             'text': new Text_Line(35),
+
         };
 
         // *** Materials
@@ -89,9 +91,12 @@ class Base_Scene extends Scene {
             zoo_text: new Material(new defs.Textured_Phong(1),
                 {ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("assets/text.png")}),
             path: new Material(new defs.Phong_Shader(),
-                {ambient: 0.9, diffusivity: 0.1, specularity: 0, color: hex_color("#c9af7b")}),
+            {ambient: 0.9, diffusivity: 0.1, specularity: 0, color: hex_color("#c9af7b")}),
+            miffy: new Material(new defs.Phong_Shader(),{
+                ambient:.9, diffusivity: .1, specularity: 0, color: hex_color("#FFFFFF")}),
             text_image: new Material(new defs.Textured_Phong(),
                 {ambient: 1, color: hex_color("#000000"), texture: new Texture("assets/text.png")}),
+
 
         };
         // The white material and basic shader are used for drawing the outline.
@@ -340,6 +345,14 @@ class Base_Scene extends Scene {
         //CLOUDS
         //let cloud_transform = Mat4.identity();
         //this.shapes.sphere.draw()
+
+
+        //MIFFY
+        let miffy_transform = Mat4.identity();
+        this.shapes.miffy.draw(context, program_state, miffy_transform.times(Mat4.translation(5,0,7)),this.materials.miffy)
+        // this.shapes.cube.draw(context,program_state, miffy_transform.times(Mat4.scale(.2,.05,.02)
+        //     .times(Mat4.translation(0,-.02,1))
+        //     .times(Mat4.rotation(Math.PI/4, 0, 0, 1))))
     }
 }
 
