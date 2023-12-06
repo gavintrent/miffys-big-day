@@ -59,6 +59,8 @@ export class Base_Scene extends Scene {
                 ambient:.9, diffusivity: .1, specularity: 0, color: hex_color("#FFFFFF")}),
             text_image: new Material(new defs.Textured_Phong(),
                 {ambient: 1, color: hex_color("#000000"), texture: new Texture("assets/text.png")}),
+            black: new Material(new defs.Phong_Shader(),
+                {ambient: 0.6, diffusivity: 1, specularity: 0, color: hex_color("#000000")}),
 
 
         };
@@ -321,13 +323,23 @@ export class Base_Scene extends Scene {
         //let cloud_transform = Mat4.identity();
         //this.shapes.sphere.draw()
 
-
         //MIFFY
-        let miffy_transform = Mat4.identity();
-        this.shapes.miffy.draw(context, program_state, miffy_transform.times(Mat4.translation(5,0,7)),this.materials.miffy)
-        // this.shapes.cube.draw(context,program_state, miffy_transform.times(Mat4.scale(.2,.05,.02)
-        //     .times(Mat4.translation(0,-.02,1))
-        //     .times(Mat4.rotation(Math.PI/4, 0, 0, 1))))
+        let miffy_transform = Mat4.identity().times(Mat4.translation(0,0,7));
+        this.shapes.miffy.draw(context, program_state, miffy_transform,this.materials.miffy)
+        this.shapes.sphere.draw(context, program_state,
+            miffy_transform.times(Mat4.translation(0.5,0,1.2)).times(Mat4.scale(0.1, 0.1, 0.1)),
+            this.materials.black);
+        this.shapes.sphere.draw(context, program_state,
+            miffy_transform.times(Mat4.translation(-0.5,0,1.2)).times(Mat4.scale(0.1, 0.1, 0.1)),
+            this.materials.black);
+        this.shapes.cube.draw(context, program_state,
+            miffy_transform.times(Mat4.rotation(Math.PI/6, 0, 0, 1)).times(Mat4.translation(-0.25,-0.4,1.15)).times(Mat4.scale(0.15, 0.03, 0.1)),
+            this.materials.black);
+        this.shapes.cube.draw(context, program_state,
+            miffy_transform.times(Mat4.rotation(-Math.PI/6, 0, 0, 1)).times(Mat4.translation(0.25,-0.4,1.15)).times(Mat4.scale(0.15, 0.03, 0.1)),
+            this.materials.black);
+
+
 
         const t = program_state.animation_time / 1000;
         if (this.title) {
