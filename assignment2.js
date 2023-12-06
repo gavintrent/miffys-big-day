@@ -26,6 +26,7 @@ const {
     Scene,
     Texture,
 } = tiny;
+const {Cube, Subdivision_Sphere} = defs;
 
 export class Base_Scene extends Scene {
     /**
@@ -54,6 +55,8 @@ export class Base_Scene extends Scene {
             zoo_text: new Text_Line(10),
             miffy: new Shape_From_File("assets/mif.obj"),
             text: new Text_Line(35),
+            box: new Cube(),
+            ball: new Subdivision_Sphere(4)
         };
 
         // *** Materials
@@ -133,6 +136,7 @@ export class Base_Scene extends Scene {
                 diffusivity: 1,
                 specularity: 0,
                 color: hex_color("#000000"),
+
             }),
         };
 
@@ -147,12 +151,20 @@ export class Base_Scene extends Scene {
                 specularity: 0.4,
                 smoothness: 64,
                 color_texture: new Texture("assets/orangetexture.png"),
-                light_depth_texture: null,
+
             }
         );
 
         // ** Shadowed textures ** //
+        this.cow_print = new Material(
+            new Shadow_Textured_Phong_Shader(1),{
+            color: hex_color("#000000"),
+            ambient: .2,
+            diffusivity: 0.5,
+            specularity: 0.5,
+            color_texture: new Texture("assets/cow_print.png"),light_depth_texture: null }
 
+        );
         this.shadowed_plastic = new Material(
             new Shadow_Textured_Phong_Shader(1),
             {
@@ -436,7 +448,12 @@ export class Base_Scene extends Scene {
 
         let light_position = this.light_position;
         let light_color = this.light_color;
-        const t = program_state.animation_time;
+        const t = this.t = program_state.animation_time;
+        const time = t / 1000; // seconds
+        const sway_angle = Math.sin(time) * Math.PI / 8; // Sway back and forth up to +/- 22.5 degrees
+        const brown = color(0.24, 0.1, 0.1, 1); // Brown color for the horns
+        const cream = color(1, 0.98, 0.82, 1); // Adjust RGB values for desired shade of cream
+        const tan = color(0.788, 0.580, 0.396, 1);
 
         program_state.draw_shadow = draw_shadow;
 
@@ -1013,7 +1030,114 @@ export class Base_Scene extends Scene {
                 .times(Mat4.scale(0.15, 0.03, 0.1)),
             this.materials.black
         );
+
+        //COW
+        let cow_body_transform = Mat4.identity().times(Mat4.translation(-45, -.2, 13))
+            .times(Mat4.scale(3, 2, 2));
+        this.shapes.ball.draw(context, program_state, cow_body_transform, // Body as an oval,
+            this.materials.plastic.override(cream));
+
+        // Draw the head
+        let cow_head_transform = cow_body_transform
+            .times(Mat4.translation(-0.7, 1, 0))
+            .times(Mat4.rotation(sway_angle, 0, 1, 0)) // Apply swaying motion
+            .times(Mat4.scale(0.5, 0.5, 0.5));
+        this.shapes.ball.draw(context, program_state, cow_head_transform, this.materials.plastic.override(cream));
+
+        // Draw the legs
+        const cow_leg_scale = Mat4.scale(0.2, 0.65, 0.2); // Adjust scale for legs
+        const cow_leg_positions = [[.8, -.85, .4], [-.8, -.85, .4], [.5, -.65, -.2], [-.5, -.65, -.2]]; // Adjust leg positions
+
+        const horn_scale = Mat4.scale(0.1, 0.4, 0.1); // Scale for the horns
+        const horn_positions = [[.4, 1.2, 0.5], [.5, 1.2, -.5]]; // Positions for the horns
+
+        for (let pos of horn_positions) {
+            let horn_transform = cow_head_transform.times(Mat4.translation(...pos))
+                .times(horn_scale);
+            this.shapes.box.draw(context, program_state, horn_transform, this.materials.plastic.override(brown));
+        }
+
+        // Draw the eye
+        let cow_eye_transform = cow_head_transform.times(Mat4.translation(.2, .2, .9))
+            .times(Mat4.scale(0.12, 0.2, 0.2)); // Scale and position for the eye
+        this.shapes.ball.draw(context, program_state, cow_eye_transform, this.materials.black);
+
+        for (let pos of cow_leg_positions) {
+            let cow_leg_transform = cow_body_transform.times(Mat4.translation(...pos))
+                .times(cow_leg_scale);
+            this.shapes.ball.draw(context, program_state, cow_leg_transform, this.materials.plastic.override(cream));
+        }
+
+        const cow_ear_scale = Mat4.scale(.1, 0.3, 0.65); // Scale for the horns
+        const cow_ear_positions = [[.4, .65, 0.5], [.5, .65, -.5]]; // Positions for the horns
+
+        for (let pos of cow_ear_positions) {
+            let cow_ear_transform = cow_head_transform.times(Mat4.translation(...pos))
+                .times(cow_ear_scale);
+            this.shapes.ball.draw(context, program_state, cow_ear_transform, this.materials.plastic.override(cream));
+        }
+
+
+        //LION
+
+        let body_transform =Mat4.identity().times(Mat4.translation(-45, -.2, 37))
+            .times(Mat4.scale(4, 2, 2)); // Body as an oval
+        this.shapes.ball.draw(context, program_state, body_transform, this.materials.plastic.override(tan));
+
+        // Draw the head
+        let head_transform = body_transform.times(Mat4.translation(-0.8, 1.02, 0))
+            .times(Mat4.rotation(sway_angle, 0, 1, 0)) // Apply swaying motion
+            .times(Mat4.scale(0.5, 0.5, 0.5));
+        this.shapes.ball.draw(context, program_state, head_transform, this.materials.plastic.override(tan));
+
+        // Draw the legs
+        const leg_scale = Mat4.scale(0.2, 0.65, 0.2); // Adjust scale for legs
+        const leg_positions = [[.8, -.85, .4], [-.8, -.85, .4], [.8, -.85, -.4], [-.8, -.85, -.4]]; // Adjust leg positions
+
+        const mane_scale = Mat4.scale(0.6, 0.8, 0.5); // Scale for the horns
+        const mane_positions =
+            [[.4, 1.2, 0.5], [.5, 1.2, -.5],[.3,.6,.8],[.3,.6,-.8], [.9,.5,.6],[.9,.5,-.6],
+                [1.2,.65,0],[.9,1.2,0], [0,1.2,0],
+                [0,-1.2,0],[.5,-1.2,.5],[.5,-1.2,-.5],
+                [.4, -1.2, 0.5], [.5, -1.2, -.5],[.3,-.6,.8],[.3,-.6,-.8], [.9,-.5,.6],[.9,-.5,-.6]]; // Positions for the horns
+
+        for (let pos of mane_positions) {
+            let mane_transform = head_transform.times(Mat4.translation(...pos))
+                .times(mane_scale);
+            this.shapes.ball.draw(context, program_state, mane_transform, this.materials.plastic.override(brown));
+        }
+
+        // Draw the eye
+        let eye_transform = head_transform.times(Mat4.translation(-.7, .3, .70))
+            .times(Mat4.scale(0.12, 0.2, 0.1)); // Scale and position for the eye
+        this.shapes.ball.draw(context, program_state, eye_transform, this.materials.black);
+
+        let eye2_transform = head_transform.times(Mat4.translation(-.7, .3, -.70))
+            .times(Mat4.scale(0.12, 0.2, 0.2)); // Scale and position for the eye
+        this.shapes.ball.draw(context, program_state, eye2_transform, this.materials.black);
+
+        // Draw the eye
+        let nose_transform = head_transform.times(Mat4.translation(-.95, .2, 0))
+            .times(Mat4.scale(0.12, 0.2, 0.4)); // Scale and position for the eye
+        this.shapes.ball.draw(context, program_state, nose_transform, this.materials.black);
+
+        for (let pos of leg_positions) {
+            let leg_transform = body_transform.times(Mat4.translation(...pos))
+                .times(leg_scale);
+            this.shapes.ball.draw(context, program_state, leg_transform, this.materials.plastic.override(tan));
+        }
+
+        const ear_scale = Mat4.scale(.1, 0.3, 0.65); // Scale for the horns
+        const ear_positions = [[.4, .65, 0.5], [.5, .65, -.5]]; // Positions for the horns
+
+        for (let pos of ear_positions) {
+            let ear_transform = head_transform.times(Mat4.translation(...pos))
+                .times(ear_scale);
+            this.shapes.ball.draw(context, program_state, ear_transform, this.materials.plastic.override(tan));
+        }
+
     }
+
 
     display(context, program_state) {
         // display():  Called once per frame of animation. Here, the base class's display only does
@@ -1110,7 +1234,6 @@ export class Base_Scene extends Scene {
             500
         );
         this.render_scene(context, program_state, true, true, true);
-
         if (this.title) {
             program_state.set_camera(
                 Mat4.look_at(vec3(10, 55, 30), vec3(10, 55, 0), vec3(0, 1, 0))
@@ -1132,7 +1255,7 @@ export class Base_Scene extends Scene {
                 "press enter to continue",
                 context.context
             );
-            if (Math.floor(t % 2) === 1) {
+            if (Math.floor((t/1000) % 2) === 1) {
                 this.shapes.text.draw(
                     context,
                     program_state,
