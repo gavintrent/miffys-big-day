@@ -1030,6 +1030,23 @@ export class Base_Scene extends Scene {
                 .times(Mat4.scale(0.15, 0.03, 0.1)),
             this.materials.black
         );
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            miffy_transform
+                .times(Mat4.translation(0,-1,0))
+                .times(Mat4.scale(1,1,1)),
+            this.materials.red
+        );
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            miffy_transform
+                .times(Mat4.rotation(Math.PI / 8,-1,0,1))
+                .times(Mat4.translation(.15,-1.8,.60))
+                .times(Mat4.scale(.2,.5,.05)),
+            this.materials.red
+        );
 
         //COW
         let cow_body_transform = Mat4.identity().times(Mat4.translation(-45, -.2, 13))
