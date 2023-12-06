@@ -65,6 +65,7 @@ class Base_Scene extends Scene {
             'fence2': new Shape_From_File("assets/fence2.obj"),
             'torus': new defs.Torus(50, 50),
             'zoo_text': new Text_Line(10),
+            'text': new Text_Line(35),
         };
 
         // *** Materials
@@ -88,7 +89,9 @@ class Base_Scene extends Scene {
             zoo_text: new Material(new defs.Textured_Phong(1),
                 {ambient: 1, diffusivity: 0, specularity: 0, texture: new Texture("assets/text.png")}),
             path: new Material(new defs.Phong_Shader(),
-            {ambient: 0.9, diffusivity: 0.1, specularity: 0, color: hex_color("#c9af7b")}),
+                {ambient: 0.9, diffusivity: 0.1, specularity: 0, color: hex_color("#c9af7b")}),
+            text_image: new Material(new defs.Textured_Phong(),
+                {ambient: 1, color: hex_color("#000000"), texture: new Texture("assets/text.png")}),
 
         };
         // The white material and basic shader are used for drawing the outline.
@@ -103,7 +106,8 @@ class Base_Scene extends Scene {
         if (!context.scratchpad.controls) {
             this.children.push(context.scratchpad.controls = new defs.Movement_Controls());
             // Define the global camera and projection matrices, which are stored in program_state.
-            program_state.set_camera(Mat4.translation(0, -5, -60));
+            //program_state.set_camera(Mat4.translation(0, -5, -60));
+            program_state.set_camera(Mat4.look_at(vec3(0, 0, 50), vec3(0, 0, 0), vec3(0, 1, 0)));
         }
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, 1, 300);
@@ -343,7 +347,7 @@ export class Assignment2 extends Base_Scene {
 
     constructor() {
         super();
-        this.intro = true;
+        this.title = true;
         this.first_scene = false;
 
     }
@@ -359,24 +363,38 @@ export class Assignment2 extends Base_Scene {
         this.key_triggered_button("Sit still", ["m"], () => {
             // TODO:  Requirement 3d:  Set a flag here that will toggle your swaying motion on and off.
         });
+        this.key_triggered_button("Enter", ['Enter'], () => {
+            if (this.title) {
+                this.title = false;
+                this.first_scene = true;
+            }
+        });
     }
 
-    draw_intro(context, program_state) {
-        //program_state.set_camera(Mat4.translation(0, -5, -60));
-        
+
+    draw_title(context, program_state) {
+        //program_state.set_camera(Mat4.look_at(vec3(0, 0, 50), vec3(0, 0, 0), vec3(0, 1, 0)));
+        // let desired = Mat4.look_at(vec3(0, 0, 50), vec3(0, 0, 0), vec3(0, 1, 0));
+        // desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.01))
+        // this.title = false;
     }
 
     display(context, program_state) {
         super.display(context, program_state);
-        if (this.intro) {
-            this.draw_intro(context, program_state);
+        const t = program_state.animation_time / 1000;
+        if (this.title) {
+            program_state.set_camera(Mat4.look_at(vec3(10, 55, 30), vec3(10, 55, 0), vec3(0, 1, 0)));
+            let title_transform = Mat4.identity().times(Mat4.translation(0, 60, 0));
+            this.shapes.text.set_string("miffy's big day", context.context);
+            this.shapes.text.draw(context, program_state, title_transform, this.materials.text_image);
+            let subtitle_transform = title_transform.times(Mat4.scale(0.5,0.5,0.5)).times(Mat4.translation(4,-10,0));
+            this.shapes.text.set_string("press enter to continue", context.context);
+            if (Math.floor(t%2) === 1) {
+                this.shapes.text.draw(context, program_state, subtitle_transform, this.materials.text_image);
+            }
         }
-
-
-
-
-
-
-
+        else if (this.first_scene) {
+            program_state.set_camera(Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0)));
+        }
     }
 }
