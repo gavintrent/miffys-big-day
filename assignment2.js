@@ -413,7 +413,12 @@ export class Base_Scene extends Scene {
             else if (this.scene_1_yes) {
                 this.scene_1_yes = false;
                 this.scene_2_a = true;
-            } else if (this.scene_2_a) {
+            }
+            else if (this.scene_1_no) {
+                this.scene_1_no = false;
+                this.scene_final = true;
+            }
+            else if (this.scene_2_a) {
                 //Option Picker
                 this.scene_2_a = false;
                 this.scene_2_red = true;
@@ -1597,7 +1602,7 @@ export class Base_Scene extends Scene {
             this.materials.text_image
         );
         let enter = Mat4.identity().times(
-            Mat4.translation(1.2, 8, 5).times(Mat4.scale(0.4, 0.4, 0.4))
+            Mat4.translation(2.5, 8, 5).times(Mat4.scale(0.4, 0.4, 0.4))
         );
         this.shapes.text.set_string("[press enter]", context.context);
         if (Math.floor(time % 2) === 1) {
@@ -2344,6 +2349,7 @@ export class Base_Scene extends Scene {
             );
         }
 
+        //MAIN RENDERING
         this.render_scene(context, program_state, true, true, true);
         if (this.title) {
             this.render_clouds(context, program_state);
@@ -2396,6 +2402,12 @@ export class Base_Scene extends Scene {
             this.render_scene_1_yes(context, program_state);
 
             // call function render_scene_2
+        } else if (this.scene_1_no) {
+            program_state.set_camera(
+                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+            );
+            this.render_scene_1_no(context, program_state);
+
         } else if (this.scene_2_a) {
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
