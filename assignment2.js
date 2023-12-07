@@ -407,6 +407,9 @@ export class Base_Scene extends Scene {
         this.is_picking = false;
         this.left_button = false;
         this.right_button = false;
+
+        // *** CAMERA STATE *** //
+        // this.attached
     }
 
     make_control_panel() {
@@ -484,7 +487,10 @@ export class Base_Scene extends Scene {
             //     this.scene_2_red = true;
             // }
         });
+        this.key_triggered_button("Move to miffy", ["Control", "0"], () => this.attached = () => this.miffy_camera);
+
     }
+
 
     texture_buffer_init(gl) {
         // Depth Texture
@@ -1231,6 +1237,7 @@ export class Base_Scene extends Scene {
                 );
             }
         }
+        this.miffy_camera = Mat4.inverse(miffy_transform.times(Mat4.translation(0, 0, -35)));
 
         //COW
         let cow_body_transform = Mat4.identity()
@@ -2566,6 +2573,11 @@ export class Base_Scene extends Scene {
                 title_transform,
                 this.materials.text_image
             );
+        }
+
+        if (this.attached !== undefined) {
+            let desired = this.attached();
+            program_state.camera_inverse = desired.map((x,i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1));
         }
     }
 }
