@@ -161,6 +161,12 @@ export class Base_Scene extends Scene {
                 specularity: 0.8,
                 color: hex_color("#FCFBF4"),
             }),
+            orange: new Material(new defs.Phong_Shader(),{
+                ambient: 1,
+                diffusivity: 1,
+                specularity: 0,
+                color: hex_color("#FFA500"),
+            })
         };
 
         // ** Example of how to add a texture to material AND have shadow ** //
@@ -1888,7 +1894,7 @@ export class Base_Scene extends Scene {
         let Line_1_transform = Mat4.identity().times(
             Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
         );
-        this.shapes.text.set_string("4a", context.context);
+        this.shapes.text.set_string("I'm hungry, what should I eat?", context.context);
         this.shapes.text.draw(
             context,
             program_state,
@@ -1896,7 +1902,8 @@ export class Base_Scene extends Scene {
             this.materials.text_image
         );
         let enter = Mat4.identity().times(
-            Mat4.translation(-7.5, 8, 5).times(Mat4.scale(0.4, 0.4, 0.4))
+            Mat4.translation(7.5, 8, 5)
+                .times(Mat4.scale(.4,.4,.4))
         );
         this.shapes.text.set_string("[press enter]", context.context);
         if (Math.floor(time % 2) === 1) {
@@ -1906,15 +1913,75 @@ export class Base_Scene extends Scene {
                 enter,
                 this.materials.text_image
             );
+
         }
+        let Button_1 = Mat4.identity().times(
+            Mat4.scale(2.4,1,.01)
+                .times(Mat4.translation(-2, -1.6, 1500)));
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            Button_1,
+            this.materials.black
+        );
+
+        let Button_1_cover = Button_1.times(
+            Mat4.scale(.98,.95,.5)
+                .times(Mat4.translation(0, 0, 5)));
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            Button_1_cover,
+            this.materials.orange
+        );
+        let Line_2_transform = Button_1_cover
+            .times(Mat4.translation(-.55, -.16, 10)
+                .times(Mat4.scale(.15,.3,1)));
+        this.shapes.text.set_string("Orange", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_2_transform,
+            this.materials.text_image
+        );
+
+        let Button_2 = Mat4.identity().times(
+            Mat4.scale(2.4,1,.01)
+                .times(Mat4.translation(2, -1.6, 1500)));
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            Button_2,
+            this.materials.black
+        );
+        let Button_2_cover = Button_2.times(
+            Mat4.scale(.98,.95,.5)
+                .times(Mat4.translation(0, 0, 5)));
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            Button_2_cover,
+            this.materials.red
+        );
+        let Line_3_transform = Button_2_cover
+            .times(Mat4.translation(-.45, -.15, 10)
+                .times(Mat4.scale(.15,.3,1)));
+        this.shapes.text.set_string("Apple", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_3_transform,
+            this.materials.text_image
+        );
     }
 
     render_scene_4_orange(context, program_state) {
         let time = program_state.animation_time / 1000;
         let Line_1_transform = Mat4.identity().times(
-            Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
+            Mat4.translation(11, 2.5, 5)
+                .times(Mat4.scale(.4,.4,.4)).times(Mat4.rotation(-.2,0,1,0))
         );
-        this.shapes.text.set_string("orange", context.context);
+        this.shapes.text.set_string("So Yummy!", context.context);
         this.shapes.text.draw(
             context,
             program_state,
@@ -1922,7 +1989,8 @@ export class Base_Scene extends Scene {
             this.materials.text_image
         );
         let enter = Mat4.identity().times(
-            Mat4.translation(-7.5, 8, 5).times(Mat4.scale(0.4, 0.4, 0.4))
+            Mat4.translation(16.5, 2.6, 5)
+                .times(Mat4.scale(.3,.3,.3)).times(Mat4.rotation(-.2,0,1,0))
         );
         this.shapes.text.set_string("[press enter]", context.context);
         if (Math.floor(time % 2) === 1) {
@@ -2406,9 +2474,9 @@ export class Base_Scene extends Scene {
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
-            this.render_scene_1_no(context, program_state);
-
-        } else if (this.scene_2_a) {
+            this.render_scene_2_a(context,program_state);
+        } else if(this.scene_2_red){
+            this.scarf = true;
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
@@ -2449,17 +2517,17 @@ export class Base_Scene extends Scene {
             this.render_scene_3_cow(context, program_state);
         } else if (this.scene_4_a) {
             program_state.set_camera(
-                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+                Mat4.look_at(vec3(17, 1.2, 16), vec3(18, 0, 8), vec3(0, 1, 0))
             );
             this.render_scene_4_a(context, program_state);
         } else if (this.scene_4_orange) {
             program_state.set_camera(
-                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+                Mat4.look_at(vec3(17, 1.2, 16), vec3(18, 0, 8), vec3(0, 1, 0))
             );
             this.render_scene_4_orange(context, program_state);
         } else if (this.scene_4_other) {
             program_state.set_camera(
-                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+                Mat4.look_at(vec3(17, 1.2, 16), vec3(18, 0, 8), vec3(0, 1, 0))
             );
             this.render_scene_4_other(context, program_state);
         } else if (this.scene_5_a) {
