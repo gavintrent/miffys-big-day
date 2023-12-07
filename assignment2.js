@@ -362,8 +362,11 @@ export class Base_Scene extends Scene {
         // *** FLAGS
         this.title = true;
         this.first_scene = false;
-        this.scene_1_b = false
-        this.scene_2 = false;
+        this.scene_1_b = false;
+        this.scene_1_yes = false;
+        this.scene_1_no = false;
+        this.scene_2_a = false;
+
     }
 
     make_control_panel() {
@@ -376,7 +379,10 @@ export class Base_Scene extends Scene {
                 this.scene_1_b = true;
             }else if(this.scene_1_b){
                 this.scene_1_b = false;
-                this.scene_2 = true;
+                this.scene_1_yes = true;
+            }else if(this.scene_1_yes){
+                this.scene_1_yes = false;
+                this.scene_2_a = false
             }
 
         });
@@ -1342,6 +1348,38 @@ export class Base_Scene extends Scene {
 
     }
 
+    render_scene_1_yes(
+        context,
+        program_state
+    ) {
+        //this scene will be the intro. Miffy will introduce herself then ask if you're ready to embark
+        //on her fun day/journey with her. It will end with a prompt of either yes or no
+        let time = program_state.animation_time/1000;
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-15, 8, 5)
+                .times(Mat4.scale(.5, .5, .5))
+        );
+        this.shapes.text.set_string("Yay! I'm so excited! ", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_1_transform,
+            this.materials.text_image
+        );
+        let enter = Mat4.identity().times(
+            Mat4.translation(1, 8, 5)
+                .times(Mat4.scale(.4,.4,.4))
+        );
+        this.shapes.text.set_string("[press enter]", context.context);
+        if (Math.floor((time) % 2) === 1) {
+            this.shapes.text.draw(
+                context,
+                program_state,
+                enter,
+                this.materials.text_image
+            );
+        }
+    }
 
     display(context, program_state) {
         // display():  Called once per frame of animation. Here, the base class's display only does
@@ -1510,10 +1548,12 @@ export class Base_Scene extends Scene {
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_1_b(context, program_state);
-        } else if (this.scene_2){
-            program_state.set_camera(
+        } else if (this.scene_1_yes){
+                program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
+            this.render_scene_1_yes(context,program_state);
+
 
             // call function render_scene_2
         }
