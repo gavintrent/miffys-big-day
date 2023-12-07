@@ -366,14 +366,24 @@ export class Base_Scene extends Scene {
         this.init_ok = false;
 
         // *** FLAGS
-        this.title = true;
-        this.first_scene = false;
-        this.scene_1_b = false;
-        this.scene_1_yes = false;
-        this.scene_1_no = false;
-        this.scene_2_a = false;
-        this.scene_2_red = false;
-        this.scene_2_blue = false;
+        this.title = true; //title screen
+        this.first_scene = false; //Im miffy intro
+        this.scene_1_b = false; //Do you wanna join?
+        this.scene_1_yes = false; //yay, im so excited
+        this.scene_1_no = false; //oh, thats too bad
+        this.scene_2_a = false; // what scarf do i wear?
+        this.scene_2_red = false; // I love it! (red toggle)
+        this.scene_2_blue = false; // I love it!( blue toggle)
+        this.scene_3_a = false; // lets go to the zoo!
+        this.scene_3_b = false; //what animal do i see?
+        this.scene_3_lion = false; // So cool! (stare at lion)
+        this.scene_3_cow = false; //so cool! (stare at cow)
+        this.scene_4_a = false; //What should I eat?
+        this.scene_4_orange = false; //orange table
+        this.scene_4_other = false; //other food on the table
+        this.scene_5_a = false; //Wow what a long day
+        this.scene_5_b = false; //I hope you had fun, I sure did!
+        this.scene_final = false; //Fin.
 
 
         this.scarf = false;
@@ -394,12 +404,57 @@ export class Base_Scene extends Scene {
             }else if(this.scene_1_b){
                 this.scene_1_b = false;
                 this.scene_1_yes = true;
-            }else if(this.scene_1_yes){
+            }else if(this.scene_1_no){
+                this.scene_1_no = false;
+                this.scene_2_a = true;
+            }
+            else if(this.scene_1_yes){
                 this.scene_1_yes = false;
                 this.scene_2_a = true;
             } else if(this.scene_2_a){
                 this.scene_2_a = false;
                 this.scene_2_red = true;
+            } else if(this.scene_2_red) {
+                this.scene_2_red = false;
+                this.scene_3_a = true;
+
+                //no current mapping to blue
+            } else if(this.scene_2_blue) {
+                this.scene_2_blue = false;
+                this.scene_3_a = true;
+            } else if (this.scene_3_a){
+                this.scene_3_a = false;
+                this.scene_3_b = true;
+            } else if (this.scene_3_b){
+                this.scene_3_b = false;
+                this.scene_3_lion = true;
+            } else if (this.scene_3_lion){
+                this.scene_3_lion = false;
+                this.scene_4_a = true;
+
+                //No current mapping to cow
+            } else if (this.scene_3_cow){
+                this.scene_3_cow = false;
+                this.scene_4_a = true;
+            } else if (this.scene_4_a){
+                this.scene_4_a = false;
+                this.scene_4_orange = true;
+            } else if(this.scene_4_orange){
+                this.scene_4_orange = false;
+                this.scene_5_a = true;
+
+
+                //No current mapping to other fruit
+            } else if(this.scene_4_other){
+                this.scene_4_other = false;
+                this.scene_5_a = true;
+
+            }  else if(this.scene_5_a){
+                this.scene_5_a = false;
+                this.scene_5_b = true;
+            } else if (this.scene_5_b){
+                this.scene_5_b = false;
+                this.scene_final = true;
             }
 
         });
@@ -1434,6 +1489,7 @@ export class Base_Scene extends Scene {
     }
 
     render_scene_2_a(context, program_state){
+        let time = program_state.animation_time/1000;
         //this scene will ask if you are ready to embark on Miffy's big day with her
         let Line_1_transform = Mat4.identity().times(
             Mat4.translation(-15, 8, 5)
@@ -1518,6 +1574,8 @@ export class Base_Scene extends Scene {
 
     }
     render_scene_2_red(context,program_state){
+        let time = program_state.animation_time/1000;
+        this.scarf_red = true;
         let Line_1_transform = Mat4.identity().times(
             Mat4.translation(-15, 8, 5)
                 .times(Mat4.scale(.5,.5,.5))
@@ -1529,6 +1587,343 @@ export class Base_Scene extends Scene {
             Line_1_transform,
             this.materials.text_image
         );
+        let enter = Mat4.identity().times(
+            Mat4.translation(-7.5, 8, 5)
+                .times(Mat4.scale(.4,.4,.4))
+        );
+        this.shapes.text.set_string("[press enter]", context.context);
+        if (Math.floor((time) % 2) === 1) {
+            this.shapes.text.draw(
+                context,
+                program_state,
+                enter,
+                this.materials.text_image
+            );
+        }
+    }
+    render_scene_2_blue(context,program_state){
+        let time = program_state.animation_time/1000;
+        this.scarf_red = false;
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-15, 8, 5)
+                .times(Mat4.scale(.5,.5,.5))
+        );
+        this.shapes.text.set_string("I love it!", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_1_transform,
+            this.materials.text_image
+        );
+        let enter = Mat4.identity().times(
+            Mat4.translation(-7.5, 8, 5)
+                .times(Mat4.scale(.4,.4,.4))
+        );
+        this.shapes.text.set_string("[press enter]", context.context);
+        if (Math.floor((time) % 2) === 1) {
+            this.shapes.text.draw(
+                context,
+                program_state,
+                enter,
+                this.materials.text_image
+            );
+        }
+    }
+
+    render_scene_3_a(context,program_state){
+        let time = program_state.animation_time/1000;
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-15, 8, 5)
+                .times(Mat4.scale(.5,.5,.5))
+        );
+        this.shapes.text.set_string("3a", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_1_transform,
+            this.materials.text_image
+        );
+        let enter = Mat4.identity().times(
+            Mat4.translation(-7.5, 8, 5)
+                .times(Mat4.scale(.4,.4,.4))
+        );
+        this.shapes.text.set_string("[press enter]", context.context);
+        if (Math.floor((time) % 2) === 1) {
+            this.shapes.text.draw(
+                context,
+                program_state,
+                enter,
+                this.materials.text_image
+            );
+        }
+    }
+
+    render_scene_3_b(context,program_state){
+        let time = program_state.animation_time/1000;
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-15, 8, 5)
+                .times(Mat4.scale(.5,.5,.5))
+        );
+        this.shapes.text.set_string("3b", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_1_transform,
+            this.materials.text_image
+        );
+        let enter = Mat4.identity().times(
+            Mat4.translation(-7.5, 8, 5)
+                .times(Mat4.scale(.4,.4,.4))
+        );
+        this.shapes.text.set_string("[press enter]", context.context);
+        if (Math.floor((time) % 2) === 1) {
+            this.shapes.text.draw(
+                context,
+                program_state,
+                enter,
+                this.materials.text_image
+            );
+        }
+    }
+
+    render_scene_3_a(context,program_state){
+        let time = program_state.animation_time/1000;
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-15, 8, 5)
+                .times(Mat4.scale(.5,.5,.5))
+        );
+        this.shapes.text.set_string("3a", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_1_transform,
+            this.materials.text_image
+        );
+        let enter = Mat4.identity().times(
+            Mat4.translation(-7.5, 8, 5)
+                .times(Mat4.scale(.4,.4,.4))
+        );
+        this.shapes.text.set_string("[press enter]", context.context);
+        if (Math.floor((time) % 2) === 1) {
+            this.shapes.text.draw(
+                context,
+                program_state,
+                enter,
+                this.materials.text_image
+            );
+        }
+    }
+
+    render_scene_3_lion(context,program_state){
+        let time = program_state.animation_time/1000;
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-15, 8, 5)
+                .times(Mat4.scale(.5,.5,.5))
+        );
+        this.shapes.text.set_string("lion", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_1_transform,
+            this.materials.text_image
+        );
+        let enter = Mat4.identity().times(
+            Mat4.translation(-7.5, 8, 5)
+                .times(Mat4.scale(.4,.4,.4))
+        );
+        this.shapes.text.set_string("[press enter]", context.context);
+        if (Math.floor((time) % 2) === 1) {
+            this.shapes.text.draw(
+                context,
+                program_state,
+                enter,
+                this.materials.text_image
+            );
+        }
+    }
+
+    render_scene_3_cow(context,program_state){
+        let time = program_state.animation_time/1000;
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-15, 8, 5)
+                .times(Mat4.scale(.5,.5,.5))
+        );
+        this.shapes.text.set_string("cow", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_1_transform,
+            this.materials.text_image
+        );
+        let enter = Mat4.identity().times(
+            Mat4.translation(-7.5, 8, 5)
+                .times(Mat4.scale(.4,.4,.4))
+        );
+        this.shapes.text.set_string("[press enter]", context.context);
+        if (Math.floor((time) % 2) === 1) {
+            this.shapes.text.draw(
+                context,
+                program_state,
+                enter,
+                this.materials.text_image
+            );
+        }
+    }
+
+    render_scene_4_a(context,program_state){
+        let time = program_state.animation_time/1000;
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-15, 8, 5)
+                .times(Mat4.scale(.5,.5,.5))
+        );
+        this.shapes.text.set_string("4a", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_1_transform,
+            this.materials.text_image
+        );
+        let enter = Mat4.identity().times(
+            Mat4.translation(-7.5, 8, 5)
+                .times(Mat4.scale(.4,.4,.4))
+        );
+        this.shapes.text.set_string("[press enter]", context.context);
+        if (Math.floor((time) % 2) === 1) {
+            this.shapes.text.draw(
+                context,
+                program_state,
+                enter,
+                this.materials.text_image
+            );
+        }
+    }
+
+    render_scene_4_orange(context,program_state){
+        let time = program_state.animation_time/1000;
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-15, 8, 5)
+                .times(Mat4.scale(.5,.5,.5))
+        );
+        this.shapes.text.set_string("orange", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_1_transform,
+            this.materials.text_image
+        );
+        let enter = Mat4.identity().times(
+            Mat4.translation(-7.5, 8, 5)
+                .times(Mat4.scale(.4,.4,.4))
+        );
+        this.shapes.text.set_string("[press enter]", context.context);
+        if (Math.floor((time) % 2) === 1) {
+            this.shapes.text.draw(
+                context,
+                program_state,
+                enter,
+                this.materials.text_image
+            );
+        }
+    }
+
+    render_scene_4_other(context,program_state){
+        let time = program_state.animation_time/1000;
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-15, 8, 5)
+                .times(Mat4.scale(.5,.5,.5))
+        );
+        this.shapes.text.set_string("other fruit", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_1_transform,
+            this.materials.text_image
+        );
+        let enter = Mat4.identity().times(
+            Mat4.translation(-7.5, 8, 5)
+                .times(Mat4.scale(.4,.4,.4))
+        );
+        this.shapes.text.set_string("[press enter]", context.context);
+        if (Math.floor((time) % 2) === 1) {
+            this.shapes.text.draw(
+                context,
+                program_state,
+                enter,
+                this.materials.text_image
+            );
+        }
+    }
+
+    render_scene_5_a(context,program_state){
+        let time = program_state.animation_time/1000;
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-15, 8, 5)
+                .times(Mat4.scale(.5,.5,.5))
+        );
+        this.shapes.text.set_string("5a", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_1_transform,
+            this.materials.text_image
+        );
+        let enter = Mat4.identity().times(
+            Mat4.translation(-7.5, 8, 5)
+                .times(Mat4.scale(.4,.4,.4))
+        );
+        this.shapes.text.set_string("[press enter]", context.context);
+        if (Math.floor((time) % 2) === 1) {
+            this.shapes.text.draw(
+                context,
+                program_state,
+                enter,
+                this.materials.text_image
+            );
+        }
+    }
+
+    render_scene_5_b(context,program_state){
+        let time = program_state.animation_time/1000;
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-15, 8, 5)
+                .times(Mat4.scale(.5,.5,.5))
+        );
+        this.shapes.text.set_string("5b", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_1_transform,
+            this.materials.text_image
+        );
+        let enter = Mat4.identity().times(
+            Mat4.translation(-7.5, 8, 5)
+                .times(Mat4.scale(.4,.4,.4))
+        );
+        this.shapes.text.set_string("[press enter]", context.context);
+        if (Math.floor((time) % 2) === 1) {
+            this.shapes.text.draw(
+                context,
+                program_state,
+                enter,
+                this.materials.text_image
+            );
+        }
+    }
+
+    render_scene_final(context,program_state){
+        let time = program_state.animation_time/1000;
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-15, 8, 5)
+                .times(Mat4.scale(.5,.5,.5))
+        );
+        this.shapes.text.set_string("Fin.", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_1_transform,
+            this.materials.text_image
+        );
+
     }
 
     display(context, program_state) {
@@ -1713,11 +2108,76 @@ export class Base_Scene extends Scene {
             this.render_scene_2_a(context,program_state);
         } else if(this.scene_2_red){
             this.scarf = true;
-            this.scarf_red = true;
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_2_red(context,program_state);
+        } else if (this.scene_2_blue){
+            this.scarf = true;
+            program_state.set_camera(
+                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+            );
+            this.render_scene_2_blue(context,program_state);
+        } else if (this.scene_3_a){
+            program_state.set_camera(
+                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+            );
+            this.render_scene_3_a(context,program_state);
+        } else if (this.scene_3_b){
+            program_state.set_camera(
+                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+            );
+            this.render_scene_3_b(context,program_state);
+        } else if (this.scene_3_lion){
+            program_state.set_camera(
+                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+            );
+            this.render_scene_3_lion(context,program_state);
+        } else if (this.scene_3_cow){
+            program_state.set_camera(
+                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+            );
+            this.render_scene_3_cow(context,program_state);
+        } else if (this.scene_4_a){
+            program_state.set_camera(
+                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+            );
+            this.render_scene_4_a(context,program_state);
+        } else if (this.scene_4_orange){
+            program_state.set_camera(
+                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+            );
+            this.render_scene_4_orange(context,program_state);
+        } else if (this.scene_4_other){
+            program_state.set_camera(
+                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+            );
+            this.render_scene_4_other(context,program_state);
+        } else if (this.scene_5_a){
+            program_state.set_camera(
+                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+            );
+            this.render_scene_5_a(context,program_state);
+        } else if (this.scene_5_b){
+            program_state.set_camera(
+                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+            );
+            this.render_scene_5_b(context,program_state);
+        }
+        else if (this.scene_final){
+            program_state.set_camera(
+                Mat4.look_at(vec3(10, 55, 30), vec3(10, 55, 0), vec3(0, 1, 0))
+            );
+            let title_transform = Mat4.identity().times(
+                Mat4.translation(4, 50, 0)
+            );
+            this.shapes.text.set_string("The End.", context.context);
+            this.shapes.text.draw(
+                context,
+                program_state,
+                title_transform,
+                this.materials.text_image
+            );
         }
     }
 }
