@@ -212,9 +212,9 @@ export class Base_Scene extends Scene {
         });
         this.shadowed_red = new Material(new Shadow_Textured_Phong_Shader(1), {
             color: color(1, 0, 0, 1),
-            ambient: 0.3,
-            diffusivity: 0.6,
-            specularity: 0.4,
+            ambient: 0.5,
+            diffusivity: 1,
+            specularity: 0.1,
             smoothness: 64,
             color_texture: null,
             light_depth_texture: null,
@@ -304,6 +304,19 @@ export class Base_Scene extends Scene {
                 light_depth_texture: null,
             }
         );
+        this.shadowed_miffy = new Material(
+            new Shadow_Textured_Phong_Shader(1),
+            {
+                color: color(1, 1, 1, 1),
+                ambient: 0.5,
+                diffusivity: 1,
+                specularity: 0,
+                smoothness: 100,
+                color_texture:null,
+                light_depth_texture: null,
+            }
+        );
+
 
         // *** do not remove please <3 for testing purposes *** //
         this.floor = new Material(new Shadow_Textured_Phong_Shader(1), {
@@ -395,6 +408,9 @@ export class Base_Scene extends Scene {
         this.shadowed_path.light_depth_texture = this.light_depth_texture;
         this.shadowed_text_image.light_depth_texture = this.light_depth_texture;
 
+        this.shadowed_miffy.light_depth_texture = this.light_depth_texture;
+
+
         this.lightDepthTextureSize = LIGHT_DEPTH_TEX_SIZE;
 
         gl.bindTexture(gl.TEXTURE_2D, this.lightDepthTexture);
@@ -456,6 +472,20 @@ export class Base_Scene extends Scene {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 
+    my_mouse_down(e, pos, context, program_state) {
+        let pos_ndc_near = vec4(pos[0], pos[1], -1.0, 1.0);
+        let pos_ndc_far  = vec4(pos[0], pos[1],  1.0, 1.0);
+        let center_ndc_near = vec4(0.0, 0.0, -1.0, 1.0);
+        let P = program_state.projection_transform;
+        let V = program_state.camera_inverse;
+        let pos_world_near = Mat4.inverse(P.times(V)).times(pos_ndc_near);
+        let pos_world_far  = Mat4.inverse(P.times(V)).times(pos_ndc_far);
+        let center_world_near  = Mat4.inverse(P.times(V)).times(center_ndc_near);
+        pos_world_near.scale_by(1 / pos_world_near[3]);
+        pos_world_far.scale_by(1 / pos_world_far[3]);
+        center_world_near.scale_by(1 / center_world_near[3]);
+    }
+
     render_scene(
         context,
         program_state,
@@ -492,518 +522,535 @@ export class Base_Scene extends Scene {
         }
 
         //GROUND
-        let ground_transform = Mat4.identity()
-            .times(Mat4.scale(80, 1, 100))
-            .times(Mat4.translation(0, -4, 0));
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            ground_transform,
-            shadow_pass ? this.grass : this.pure
-        );
+        {
+            let ground_transform = Mat4.identity()
+                .times(Mat4.scale(80, 1, 100))
+                .times(Mat4.translation(0, -4, 0));
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                ground_transform,
+                shadow_pass ? this.grass : this.pure
+            );
+        }
 
         //HILLS
         let hills_transform = Mat4.identity();
-        this.shapes.sphere.draw(
-            context,
-            program_state,
-            hills_transform
-                .times(Mat4.translation(-40, -20, -60))
-                .times(Mat4.scale(60, 30, 40)),
-            shadow_pass ? this.grass : this.pure
-        );
-        this.shapes.sphere.draw(
-            context,
-            program_state,
-            hills_transform
-                .times(Mat4.translation(50, -20, -60))
-                .times(Mat4.scale(60, 30, 40)),
-            shadow_pass ? this.grass : this.pure
-        );
+        {
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                hills_transform
+                    .times(Mat4.translation(-40, -20, -60))
+                    .times(Mat4.scale(60, 30, 40)),
+                shadow_pass ? this.grass : this.pure
+            );
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                hills_transform
+                    .times(Mat4.translation(50, -20, -60))
+                    .times(Mat4.scale(60, 30, 40)),
+                shadow_pass ? this.grass : this.pure
+            );
+        }
 
         //SKY ** notice how this is not shaded
-        this.shapes.sphere.draw(
-            context,
-            program_state,
-            hills_transform
-                .times(Mat4.translation(-20, 0, 0))
-                .times(Mat4.scale(100, 100, 100)),
-            this.materials.sky
-        );
+        {
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                hills_transform
+                    .times(Mat4.translation(-20, 0, 0))
+                    .times(Mat4.scale(100, 100, 100)),
+                this.materials.sky
+            );
+        }
 
         //HOUSE
-        let house_transform = Mat4.identity().times(Mat4.scale(3.5, 3, 3));
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            house_transform,
-            shadow_pass ? this.shadowed_wall : this.pure
-        );
-        this.shapes.triangle.draw(
-            context,
-            program_state,
-            house_transform.times(Mat4.translation(0, 1, 1)),
-            shadow_pass ? this.shadowed_wall : this.pure
-        );
-        this.shapes.triangle.draw(
-            context,
-            program_state,
-            house_transform
-                .times(Mat4.translation(0, 1, 1))
-                .times(Mat4.rotation(Math.PI / 2, 0, 0, 1)),
-            shadow_pass ? this.shadowed_wall : this.pure
-        );
-        this.shapes.triangle.draw(
-            context,
-            program_state,
-            house_transform.times(Mat4.translation(0, 1, -1)),
-            shadow_pass ? this.shadowed_wall : this.pure
-        );
-        this.shapes.triangle.draw(
-            context,
-            program_state,
-            house_transform
-                .times(Mat4.translation(0, 1, -1))
-                .times(Mat4.rotation(Math.PI / 2, 0, 0, 1)),
-            shadow_pass ? this.shadowed_wall : this.pure
-        );
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            house_transform
-                .times(Mat4.rotation(Math.PI / 4, 0, 0, 1))
-                .times(Mat4.scale(1, 0.15, 1.2))
-                .times(Mat4.translation(0.65, 10, 0)),
-            shadow_pass ? this.shadowed_red : this.pure
-        );
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            house_transform
-                .times(Mat4.rotation(-Math.PI / 4, 0, 0, 1))
-                .times(Mat4.scale(1, 0.15, 1.2))
-                .times(Mat4.translation(-0.65, 10, 0)),
-            shadow_pass ? this.shadowed_red : this.pure
-        );
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            house_transform
-                .times(Mat4.scale(0.2, 0.5, 0.2))
-                .times(Mat4.translation(3.5, 3.5, 3)),
-            shadow_pass ? this.shadowed_wall : this.pure
-        );
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            house_transform
-                .times(Mat4.scale(0.2, 0.6, 0.1))
-                .times(Mat4.translation(-3.3, 0, 10)),
-            this.materials.red
-        );
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            house_transform
-                .times(Mat4.scale(0.2, 0.6, 0.1))
-                .times(Mat4.translation(3.3, 0, 10)),
-            this.materials.red
-        );
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            house_transform
-                .times(Mat4.scale(0.45, 0.6, 0.1))
-                .times(Mat4.translation(0, 0, 10)),
-            shadow_pass ? this.shadowed_green : this.pure
-        );
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            house_transform
-                .times(Mat4.scale(0.15, 0.2, 0.1))
-                .times(Mat4.translation(-1.3, 1.3, 10.1)),
-            this.materials.yellow
-        );
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            house_transform
-                .times(Mat4.scale(0.15, 0.2, 0.1))
-                .times(Mat4.translation(1.3, 1.3, 10.1)),
-            this.materials.yellow
-        );
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            house_transform
-                .times(Mat4.scale(0.15, 0.2, 0.1))
-                .times(Mat4.translation(-1.3, -1.3, 10.1)),
-            this.materials.yellow
-        );
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            house_transform
-                .times(Mat4.scale(0.15, 0.2, 0.1))
-                .times(Mat4.translation(1.3, -1.3, 10.1)),
-            this.materials.yellow
-        );
+        {
+            let house_transform = Mat4.identity().times(Mat4.scale(3.5, 3, 3));
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                house_transform,
+                shadow_pass ? this.shadowed_wall : this.pure
+            );
+            this.shapes.triangle.draw(
+                context,
+                program_state,
+                house_transform.times(Mat4.translation(0, 1, 1)),
+                shadow_pass ? this.shadowed_wall : this.pure
+            );
+            this.shapes.triangle.draw(
+                context,
+                program_state,
+                house_transform
+                    .times(Mat4.translation(0, 1, 1))
+                    .times(Mat4.rotation(Math.PI / 2, 0, 0, 1)),
+                shadow_pass ? this.shadowed_wall : this.pure
+            );
+            this.shapes.triangle.draw(
+                context,
+                program_state,
+                house_transform.times(Mat4.translation(0, 1, -1)),
+                shadow_pass ? this.shadowed_wall : this.pure
+            );
+            this.shapes.triangle.draw(
+                context,
+                program_state,
+                house_transform
+                    .times(Mat4.translation(0, 1, -1))
+                    .times(Mat4.rotation(Math.PI / 2, 0, 0, 1)),
+                shadow_pass ? this.shadowed_wall : this.pure
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                house_transform
+                    .times(Mat4.rotation(Math.PI / 4, 0, 0, 1))
+                    .times(Mat4.scale(1, 0.15, 1.2))
+                    .times(Mat4.translation(0.65, 10, 0)),
+                shadow_pass ? this.shadowed_red : this.pure
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                house_transform
+                    .times(Mat4.rotation(-Math.PI / 4, 0, 0, 1))
+                    .times(Mat4.scale(1, 0.15, 1.2))
+                    .times(Mat4.translation(-0.65, 10, 0)),
+                shadow_pass ? this.shadowed_red : this.pure
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                house_transform
+                    .times(Mat4.scale(0.2, 0.5, 0.2))
+                    .times(Mat4.translation(3.5, 3.5, 3)),
+                shadow_pass ? this.shadowed_wall : this.pure
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                house_transform
+                    .times(Mat4.scale(0.2, 0.6, 0.1))
+                    .times(Mat4.translation(-3.3, 0, 10)),
+                this.materials.red
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                house_transform
+                    .times(Mat4.scale(0.2, 0.6, 0.1))
+                    .times(Mat4.translation(3.3, 0, 10)),
+                this.materials.red
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                house_transform
+                    .times(Mat4.scale(0.45, 0.6, 0.1))
+                    .times(Mat4.translation(0, 0, 10)),
+                shadow_pass ? this.shadowed_green : this.pure
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                house_transform
+                    .times(Mat4.scale(0.15, 0.2, 0.1))
+                    .times(Mat4.translation(-1.3, 1.3, 10.1)),
+                this.materials.yellow
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                house_transform
+                    .times(Mat4.scale(0.15, 0.2, 0.1))
+                    .times(Mat4.translation(1.3, 1.3, 10.1)),
+                this.materials.yellow
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                house_transform
+                    .times(Mat4.scale(0.15, 0.2, 0.1))
+                    .times(Mat4.translation(-1.3, -1.3, 10.1)),
+                this.materials.yellow
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                house_transform
+                    .times(Mat4.scale(0.15, 0.2, 0.1))
+                    .times(Mat4.translation(1.3, -1.3, 10.1)),
+                this.materials.yellow
+            );
+        }
 
         //PICNIC TABLE
         // some of the .obj is not shadowing right :(
-        let picnic_transform = Mat4.identity();
-        this.shapes.picnic.draw(
-            context,
-            program_state,
-            picnic_transform
-                .times(Mat4.rotation(Math.PI / 5, 0, 1, 0))
-                .times(Mat4.scale(2, 2, 2))
-                .times(Mat4.translation(5, -0.5, 8)),
-            shadow_pass ? this.shadowed_picnic : this.pure
-        );
+        {
+            let picnic_transform = Mat4.identity();
+            this.shapes.picnic.draw(
+                context,
+                program_state,
+                picnic_transform
+                    .times(Mat4.rotation(Math.PI / 5, 0, 1, 0))
+                    .times(Mat4.scale(2, 2, 2))
+                    .times(Mat4.translation(5, -0.5, 8)),
+                shadow_pass ? this.shadowed_picnic : this.pure
+            );
+        }
 
         //TREES
-        let tree_transform = Mat4.identity();
-        this.shapes.sphere.draw(
-            context,
-            program_state,
-            tree_transform
-                .times(Mat4.translation(15, -3, 0))
-                .times(Mat4.scale(0.7, 10, 0.7)),
-            shadow_pass ? this.shadowed_wood : this.pure
-        );
-        this.shapes.sphere.draw(
-            context,
-            program_state,
-            tree_transform
-                .times(Mat4.translation(15, 4, 0))
-                .times(Mat4.scale(3.5, 3.5, 3.5)),
-            shadow_pass ? this.shadowed_green : this.pure
-        );
-        this.shapes.sphere.draw(
-            context,
-            program_state,
-            tree_transform
-                .times(Mat4.rotation(Math.PI / 4, 0, 0, 1))
-                .times(Mat4.translation(9, -11, 0))
-                .times(Mat4.scale(0.3, 1, 0.3)),
-            shadow_pass ? this.shadowed_wood : this.pure
-        );
-        tree_transform = tree_transform
-            .times(Mat4.translation(0, 0, 0))
-            .times(Mat4.rotation(Math.PI, 0, 1, 0));
-        this.shapes.sphere.draw(
-            context,
-            program_state,
-            tree_transform
-                .times(Mat4.translation(15, -3, 0))
-                .times(Mat4.scale(0.7, 10, 0.7)),
-            shadow_pass ? this.shadowed_wood : this.pure
-        );
-        this.shapes.sphere.draw(
-            context,
-            program_state,
-            tree_transform
-                .times(Mat4.translation(15, 4, 0))
-                .times(Mat4.scale(3.5, 3.5, 3.5)),
-            shadow_pass ? this.shadowed_green : this.pure
-        );
-        this.shapes.sphere.draw(
-            context,
-            program_state,
-            tree_transform
-                .times(Mat4.rotation(Math.PI / 4, 0, 0, 1))
-                .times(Mat4.translation(9, -11, 0))
-                .times(Mat4.scale(0.3, 1, 0.3)),
-            shadow_pass ? this.shadowed_wood : this.pure
-        );
+        {
+            let tree_transform = Mat4.identity();
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                tree_transform
+                    .times(Mat4.translation(15, -3, 0))
+                    .times(Mat4.scale(0.7, 10, 0.7)),
+                shadow_pass ? this.shadowed_wood : this.pure
+            );
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                tree_transform
+                    .times(Mat4.translation(15, 4, 0))
+                    .times(Mat4.scale(3.5, 3.5, 3.5)),
+                shadow_pass ? this.shadowed_green : this.pure
+            );
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                tree_transform
+                    .times(Mat4.rotation(Math.PI / 4, 0, 0, 1))
+                    .times(Mat4.translation(9, -11, 0))
+                    .times(Mat4.scale(0.3, 1, 0.3)),
+                shadow_pass ? this.shadowed_wood : this.pure
+            );
+            tree_transform = tree_transform
+                .times(Mat4.translation(0, 0, 0))
+                .times(Mat4.rotation(Math.PI, 0, 1, 0));
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                tree_transform
+                    .times(Mat4.translation(15, -3, 0))
+                    .times(Mat4.scale(0.7, 10, 0.7)),
+                shadow_pass ? this.shadowed_wood : this.pure
+            );
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                tree_transform
+                    .times(Mat4.translation(15, 4, 0))
+                    .times(Mat4.scale(3.5, 3.5, 3.5)),
+                shadow_pass ? this.shadowed_green : this.pure
+            );
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                tree_transform
+                    .times(Mat4.rotation(Math.PI / 4, 0, 0, 1))
+                    .times(Mat4.translation(9, -11, 0))
+                    .times(Mat4.scale(0.3, 1, 0.3)),
+                shadow_pass ? this.shadowed_wood : this.pure
+            );
+        }
 
         //FENCE
-        let fence_transform = Mat4.identity().times(
-            Mat4.rotation(-Math.PI / 2, 1, 0, 0)
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            fence_transform
-                .times(Mat4.translation(6.5, -2, -1.7))
-                .times(Mat4.scale(2, 1, 1)),
-            shadow_pass ? this.shadowed_yellow : this.pure
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            fence_transform
-                .times(Mat4.translation(-6.5, -2, -1.7))
-                .times(Mat4.scale(2, 1, 1)),
-            shadow_pass ? this.shadowed_yellow : this.pure
-        );
+        {
+            let fence_transform = Mat4.identity().times(
+                Mat4.rotation(-Math.PI / 2, 1, 0, 0)
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                fence_transform
+                    .times(Mat4.translation(6.5, -2, -1.7))
+                    .times(Mat4.scale(2, 1, 1)),
+                shadow_pass ? this.shadowed_yellow : this.pure
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                fence_transform
+                    .times(Mat4.translation(-6.5, -2, -1.7))
+                    .times(Mat4.scale(2, 1, 1)),
+                shadow_pass ? this.shadowed_yellow : this.pure
+            );
+        }
 
         //ZOO
-        //FENCES
-        let zoo_transform = Mat4.identity();
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.translation(-40, -20, -1.7))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.translation(-46, -20, -1.7))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.translation(-52, -20, -1.7))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.translation(-52, -8, -1.7))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.translation(-40, -8, -1.7))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.translation(-46, -8, -1.7))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.translation(-37, -1.7, 11))
-                .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.translation(-37, -1.7, 17))
-                .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.translation(-55, -1.7, 11))
-                .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.translation(-55, -1.7, 17))
-                .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        zoo_transform = zoo_transform.times(Mat4.translation(0, 0, 20));
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.translation(-40, -20, -1.7))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.translation(-46, -20, -1.7))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.translation(-52, -20, -1.7))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.translation(-52, -8, -1.7))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.translation(-40, -8, -1.7))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.translation(-46, -8, -1.7))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.translation(-37, -1.7, 11))
-                .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.translation(-37, -1.7, 17))
-                .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.translation(-55, -1.7, 11))
-                .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        this.shapes.fence2.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.translation(-55, -1.7, 17))
-                .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
-                .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
-                .times(Mat4.scale(2, 1, 1)),
-            this.materials.red
-        );
-        //SIGN (zoo)
-        this.shapes.torus.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
-                .times(Mat4.scale(20, 12, 4))
-                .times(Mat4.translation(-0.2, -0.1, -8)),
-            shadow_pass ? this.shadowed_yellow : this.pure
-        );
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.scale(1, 3, 10))
-                .times(Mat4.translation(-32, 0, 3)),
-            shadow_pass ? this.shadowed_yellow : this.pure
-        );
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.scale(1, 3, 10))
-                .times(Mat4.translation(-32, 0, -2)),
-            shadow_pass ? this.shadowed_yellow : this.pure
-        );
-        this.shapes.zoo_text.set_string("ZOO", context.context);
-        this.shapes.zoo_text.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.scale(2, 2, 2))
-                .times(Mat4.translation(-15, 3, 3.5))
-                .times(Mat4.rotation(Math.PI / 2, 0, 1, 0)),
-            this.materials.zoo_text
-        );
-        //BUSHES
-        this.shapes.sphere.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.scale(1.5, 1.5, 1.5))
-                .times(Mat4.translation(-19, -1.5, -2)),
-            shadow_pass ? this.shadowed_green : this.pure
-        );
-        this.shapes.sphere.draw(
-            context,
-            program_state,
-            zoo_transform
-                .times(Mat4.scale(1.5, 1.5, 1.5))
-                .times(Mat4.translation(-19, -1.5, 7.45)),
-            shadow_pass ? this.shadowed_green : this.pure
-        );
+        {//FENCES
+            let zoo_transform = Mat4.identity();
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.translation(-40, -20, -1.7))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.translation(-46, -20, -1.7))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.translation(-52, -20, -1.7))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.translation(-52, -8, -1.7))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.translation(-40, -8, -1.7))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.translation(-46, -8, -1.7))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.translation(-37, -1.7, 11))
+                    .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.translation(-37, -1.7, 17))
+                    .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.translation(-55, -1.7, 11))
+                    .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.translation(-55, -1.7, 17))
+                    .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            zoo_transform = zoo_transform.times(Mat4.translation(0, 0, 20));
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.translation(-40, -20, -1.7))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.translation(-46, -20, -1.7))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.translation(-52, -20, -1.7))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.translation(-52, -8, -1.7))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.translation(-40, -8, -1.7))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.translation(-46, -8, -1.7))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.translation(-37, -1.7, 11))
+                    .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.translation(-37, -1.7, 17))
+                    .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.translation(-55, -1.7, 11))
+                    .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            this.shapes.fence2.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.translation(-55, -1.7, 17))
+                    .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+                    .times(Mat4.rotation(-Math.PI / 2, 1, 0, 0))
+                    .times(Mat4.scale(2, 1, 1)),
+                this.materials.red
+            );
+            //SIGN (zoo)
+            this.shapes.torus.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+                    .times(Mat4.scale(20, 12, 4))
+                    .times(Mat4.translation(-0.2, -0.1, -8)),
+                shadow_pass ? this.shadowed_yellow : this.pure
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.scale(1, 3, 10))
+                    .times(Mat4.translation(-32, 0, 3)),
+                shadow_pass ? this.shadowed_yellow : this.pure
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.scale(1, 3, 10))
+                    .times(Mat4.translation(-32, 0, -2)),
+                shadow_pass ? this.shadowed_yellow : this.pure
+            );
+            this.shapes.zoo_text.set_string("ZOO", context.context);
+            this.shapes.zoo_text.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.scale(2, 2, 2))
+                    .times(Mat4.translation(-15, 3, 3.5))
+                    .times(Mat4.rotation(Math.PI / 2, 0, 1, 0)),
+                this.materials.zoo_text
+            );
+            //BUSHES
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.scale(1.5, 1.5, 1.5))
+                    .times(Mat4.translation(-19, -1.5, -2)),
+                shadow_pass ? this.shadowed_green : this.pure
+            );
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                zoo_transform
+                    .times(Mat4.scale(1.5, 1.5, 1.5))
+                    .times(Mat4.translation(-19, -1.5, 7.45)),
+                shadow_pass ? this.shadowed_green : this.pure
+            );
+        }
 
         //PATH
-        let path_transform = Mat4.identity();
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            path_transform
-                .times(Mat4.scale(27, 1, 3))
-                .times(Mat4.translation(-1.1, -3.95, 8)),
-            !shadow_pass ? this.shadowed_path : this.materials.path
-        );
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            path_transform
-                .times(Mat4.scale(3, 1, 50))
-                .times(Mat4.translation(0, -3.95, 1)),
-            !shadow_pass ? this.shadowed_path : this.materials.path
-        );
+        {
+            let path_transform = Mat4.identity();
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                path_transform
+                    .times(Mat4.scale(27, 1, 3))
+                    .times(Mat4.translation(-1.1, -3.95, 8)),
+                shadow_pass ? this.shadowed_path : this.pure
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                path_transform
+                    .times(Mat4.scale(3, 1, 50))
+                    .times(Mat4.translation(0, -3.95, 1)),
+                shadow_pass ? this.shadowed_path : this.pure
+            );
+        }
 
         //CLOUDS
         //let cloud_transform = Mat4.identity();
@@ -1011,63 +1058,65 @@ export class Base_Scene extends Scene {
 
         //MIFFY
         let miffy_transform = Mat4.identity().times(Mat4.translation(0, 0, 7));
-        this.shapes.miffy.draw(
-            context,
-            program_state,
-            miffy_transform,
-            this.materials.miffy
-        );
-        this.shapes.sphere.draw(
-            context,
-            program_state,
-            miffy_transform
-                .times(Mat4.translation(0.5, 0, 1.2))
-                .times(Mat4.scale(0.1, 0.1, 0.1)),
-            this.materials.black
-        );
-        this.shapes.sphere.draw(
-            context,
-            program_state,
-            miffy_transform
-                .times(Mat4.translation(-0.5, 0, 1.2))
-                .times(Mat4.scale(0.1, 0.1, 0.1)),
-            this.materials.black
-        );
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            miffy_transform
-                .times(Mat4.rotation(Math.PI / 6, 0, 0, 1))
-                .times(Mat4.translation(-0.25, -0.4, 1.15))
-                .times(Mat4.scale(0.15, 0.03, 0.1)),
-            this.materials.black
-        );
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            miffy_transform
-                .times(Mat4.rotation(-Math.PI / 6, 0, 0, 1))
-                .times(Mat4.translation(0.25, -0.4, 1.15))
-                .times(Mat4.scale(0.15, 0.03, 0.1)),
-            this.materials.black
-        );
-        this.shapes.sphere.draw(
-            context,
-            program_state,
-            miffy_transform
-                .times(Mat4.translation(0,-1,0))
-                .times(Mat4.scale(1,1,1)),
-            this.materials.red
-        );
-        this.shapes.cube.draw(
-            context,
-            program_state,
-            miffy_transform
-                .times(Mat4.rotation(Math.PI / 8,-1,0,1))
-                .times(Mat4.translation(.15,-1.8,.60))
-                .times(Mat4.scale(.2,.5,.05)),
-            this.materials.red
-        );
+        {
+            this.shapes.miffy.draw(
+                context,
+                program_state,
+                miffy_transform,
+                shadow_pass ? this.shadowed_miffy : this.pure
+            );
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                miffy_transform
+                    .times(Mat4.translation(0.5, 0, 1.2))
+                    .times(Mat4.scale(0.1, 0.1, 0.1)),
+                this.materials.black
+            );
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                miffy_transform
+                    .times(Mat4.translation(-0.5, 0, 1.2))
+                    .times(Mat4.scale(0.1, 0.1, 0.1)),
+                this.materials.black
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                miffy_transform
+                    .times(Mat4.rotation(Math.PI / 6, 0, 0, 1))
+                    .times(Mat4.translation(-0.25, -0.4, 1.15))
+                    .times(Mat4.scale(0.15, 0.03, 0.1)),
+                this.materials.black
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                miffy_transform
+                    .times(Mat4.rotation(-Math.PI / 6, 0, 0, 1))
+                    .times(Mat4.translation(0.25, -0.4, 1.15))
+                    .times(Mat4.scale(0.15, 0.03, 0.1)),
+                this.materials.black
+            );
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                miffy_transform
+                    .times(Mat4.translation(0, -1, 0))
+                    .times(Mat4.scale(1, 1, 1)),
+                shadow_pass ? this.shadowed_red : this.pure
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                miffy_transform
+                    .times(Mat4.rotation(Math.PI / 8, -1, 0, 1))
+                    .times(Mat4.translation(.15, -1.8, .60))
+                    .times(Mat4.scale(.2, .5, .05)),
+                shadow_pass ? this.shadowed_red : this.pure
+            );
+        }
 
         //COW
         let cow_body_transform = Mat4.identity().times(Mat4.translation(-45, -.2, 13))
@@ -1317,8 +1366,39 @@ export class Base_Scene extends Scene {
             );
             // Define the global camera and projection matrices, which are stored in program_state.
             program_state.set_camera(
-                Mat4.look_at(vec3(0, 0, 50), vec3(0, 0, 0), vec3(0, 1, 0))
+                Mat4.look_at(vec3(0, 0, 20), vec3(0, 0, 0), vec3(0, 1, 0))
             ); // Locate the camera here
+
+
+            //  *** EVENT LISTENER FOR MOUSE DOWN *** //
+
+            let canvas = context.canvas;
+            const mouse_position = (e, rect = canvas.getBoundingClientRect()) =>
+                vec((e.clientX - (rect.left + rect.right) / 2) / ((rect.right - rect.left) / 2),
+                    (e.clientY - (rect.bottom + rect.top) / 2) / ((rect.top - rect.bottom) / 2));
+
+            canvas.addEventListener("mousedown", e => {
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const midX = (rect.left + rect.right) / 2;
+
+                console.log("e.clientX: " + e.clientX);
+                console.log("e.clientX - rect.left: " + (e.clientX - rect.left));
+                console.log("e.clientY: " + e.clientY);
+                console.log("e.clientY - rect.top: " + (e.clientY - rect.top));
+                console.log("mouse_position(e): " + mouse_position(e));
+
+                // Check if the click is on the left or right side of the canvas
+                if (e.clientX < midX) {
+                    console.log("Click on the left side");
+                } else {
+                    console.log("Click on the right side");
+                }
+
+                this.my_mouse_down(e, mouse_position(e), context, program_state);
+            });
+
+
         }
 
         // The position of the light
@@ -1330,7 +1410,7 @@ export class Base_Scene extends Scene {
         // this.light_position = Mat4.rotation(t / 1500, 0, 1, 0).times(vec4(3, 30, 0, 1));  // this one is like rotating
 
         // The color of the light
-        this.light_color = color(1, 1, 1, 1);
+        this.light_color = color(1, 0.7490196078431373, 0, 1);
 
         // This is a rough target of the light.
         // Although the light is point light, we need a target to set the POV of the light
