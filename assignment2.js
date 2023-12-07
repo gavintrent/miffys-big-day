@@ -155,6 +155,12 @@ export class Base_Scene extends Scene {
                 diffusivity: 1,
                 specularity: 0,
                 color: hex_color("#4169e1"),
+            }),
+            cloud: new Material(new defs.Phong_Shader(),{
+                ambient: 1,
+                diffusivity: 1,
+                specularity: .8,
+                color: hex_color("#FCFBF4"),
             })
         };
 
@@ -411,7 +417,7 @@ export class Base_Scene extends Scene {
             else if(this.scene_1_yes){
                 this.scene_1_yes = false;
                 this.scene_2_a = true;
-            } else if(this.scene_2_a){
+            } else if(this.scene_2_a){ //Option Picker
                 this.scene_2_a = false;
                 this.scene_2_red = true;
             } else if(this.scene_2_red) {
@@ -425,7 +431,7 @@ export class Base_Scene extends Scene {
             } else if (this.scene_3_a){
                 this.scene_3_a = false;
                 this.scene_3_b = true;
-            } else if (this.scene_3_b){
+            } else if (this.scene_3_b){ //Option Picker
                 this.scene_3_b = false;
                 this.scene_3_lion = true;
             } else if (this.scene_3_lion){
@@ -436,7 +442,7 @@ export class Base_Scene extends Scene {
             } else if (this.scene_3_cow){
                 this.scene_3_cow = false;
                 this.scene_4_a = true;
-            } else if (this.scene_4_a){
+            } else if (this.scene_4_a){ //Option Picker
                 this.scene_4_a = false;
                 this.scene_4_orange = true;
             } else if(this.scene_4_orange){
@@ -1860,7 +1866,7 @@ export class Base_Scene extends Scene {
             Mat4.translation(-15, 8, 5)
                 .times(Mat4.scale(.5,.5,.5))
         );
-        this.shapes.text.set_string("5a", context.context);
+        this.shapes.text.set_string("Wow, what a fun adventure!", context.context);
         this.shapes.text.draw(
             context,
             program_state,
@@ -1868,7 +1874,7 @@ export class Base_Scene extends Scene {
             this.materials.text_image
         );
         let enter = Mat4.identity().times(
-            Mat4.translation(-7.5, 8, 5)
+            Mat4.translation(5.2, 8, 5)
                 .times(Mat4.scale(.4,.4,.4))
         );
         this.shapes.text.set_string("[press enter]", context.context);
@@ -1883,20 +1889,31 @@ export class Base_Scene extends Scene {
     }
 
     render_scene_5_b(context,program_state){
-        let time = program_state.animation_time/1000;
+        const time = program_state.animation_time/1000;
         let Line_1_transform = Mat4.identity().times(
             Mat4.translation(-15, 8, 5)
                 .times(Mat4.scale(.5,.5,.5))
         );
-        this.shapes.text.set_string("5b", context.context);
+        this.shapes.text.set_string("I hope you had fun, let's go", context.context);
         this.shapes.text.draw(
             context,
             program_state,
             Line_1_transform,
             this.materials.text_image
         );
+        let Line_2_transform = Mat4.identity().times(
+            Mat4.translation(-15.1, 7, 5)
+                .times(Mat4.scale(.5,.5,.5))
+        );
+        this.shapes.text.set_string("on another adventure soon!", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_2_transform,
+            this.materials.text_image
+        );
         let enter = Mat4.identity().times(
-            Mat4.translation(-7.5, 8, 5)
+            Mat4.translation(4.7, 7, 5)
                 .times(Mat4.scale(.4,.4,.4))
         );
         this.shapes.text.set_string("[press enter]", context.context);
@@ -1924,6 +1941,36 @@ export class Base_Scene extends Scene {
             this.materials.text_image
         );
 
+    }
+    render_clouds(context,program_state){
+        let time = program_state.animation_time/1000;
+        let cloud_1_transform = Mat4.identity().times(
+            Mat4.translation(-7,60,0)
+                .times(Mat4.scale(3,3,3))
+        );
+        this.shapes.ball.draw(context,program_state,cloud_1_transform,this.materials.cloud)
+        const cloud_scale = Mat4.scale(.8, .8, .8); // Scale for the horns
+        const cloud_positions = [[-1, 0, 0], [-1, 0, -5],[-2.5,-.5,-2],[-6,0,-5]]; // Positions for the horns
+
+        for (let pos of cloud_positions) {
+            let cloud_transform = cloud_1_transform.times(Mat4.translation(...pos))
+                .times(cloud_scale);
+            this.shapes.ball.draw(context, program_state, cloud_transform, this.materials.cloud);
+        }
+
+        let cloud_2_transform = Mat4.identity().times(
+            Mat4.translation(30,60,5)
+                .times(Mat4.scale(3,3,3))
+        );
+        this.shapes.ball.draw(context,program_state,cloud_2_transform,this.materials.cloud)
+        const cloud_scale_2 = Mat4.scale(.8, .8, .8); // Scale for the horns
+        const cloud_positions_2 = [[-1, 0, 0], [-.1, 0, -5],[-0.5,-.5,-2],[3,0,-5]]; // Positions for the horns
+
+        for (let pos of cloud_positions_2) {
+            let cloud_transform = cloud_2_transform.times(Mat4.translation(...pos))
+                .times(cloud_scale_2);
+            this.shapes.ball.draw(context, program_state, cloud_transform, this.materials.cloud);
+        }
     }
 
     display(context, program_state) {
@@ -2053,6 +2100,7 @@ export class Base_Scene extends Scene {
         );
         this.render_scene(context, program_state, true, true, true);
         if (this.title) {
+            this.render_clouds(context,program_state);
             program_state.set_camera(
                 Mat4.look_at(vec3(10, 55, 30), vec3(10, 55, 0), vec3(0, 1, 0))
             );
@@ -2168,9 +2216,10 @@ export class Base_Scene extends Scene {
             program_state.set_camera(
                 Mat4.look_at(vec3(10, 55, 30), vec3(10, 55, 0), vec3(0, 1, 0))
             );
+            this.render_clouds(context,program_state);
             let title_transform = Mat4.identity().times(
-                Mat4.translation(4, 50, 0)
-            );
+                Mat4.translation(2.5, 57, 0)
+            ).times(Mat4.scale(1.5,1.5,1.5));
             this.shapes.text.set_string("The End.", context.context);
             this.shapes.text.draw(
                 context,
