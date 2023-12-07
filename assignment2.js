@@ -149,6 +149,12 @@ export class Base_Scene extends Scene {
                 diffusivity: 1,
                 specularity: 0,
                 color: hex_color("#8aa6b8"),
+            }),
+            royal: new Material(new defs.Phong_Shader(),{
+                ambient: 1,
+                diffusivity: 1,
+                specularity: 0,
+                color: hex_color("#4169e1"),
             })
         };
 
@@ -366,6 +372,14 @@ export class Base_Scene extends Scene {
         this.scene_1_yes = false;
         this.scene_1_no = false;
         this.scene_2_a = false;
+        this.scene_2_red = false;
+        this.scene_2_blue = false;
+
+
+        this.scarf = false;
+        this.scarf_red = false;
+        this.scarf_blue = false;
+
 
     }
 
@@ -382,7 +396,10 @@ export class Base_Scene extends Scene {
                 this.scene_1_yes = true;
             }else if(this.scene_1_yes){
                 this.scene_1_yes = false;
-                this.scene_2_a = false
+                this.scene_2_a = true;
+            } else if(this.scene_2_a){
+                this.scene_2_a = false;
+                this.scene_2_red = true;
             }
 
         });
@@ -1105,23 +1122,25 @@ export class Base_Scene extends Scene {
                     .times(Mat4.scale(0.15, 0.03, 0.1)),
                 this.materials.black
             );
-            this.shapes.sphere.draw(
-                context,
-                program_state,
-                miffy_transform
-                    .times(Mat4.translation(0, -1, 0))
-                    .times(Mat4.scale(1, 1, 1)),
-                shadow_pass ? this.shadowed_red : this.pure
-            );
-            this.shapes.cube.draw(
-                context,
-                program_state,
-                miffy_transform
-                    .times(Mat4.rotation(Math.PI / 8, -1, 0, 1))
-                    .times(Mat4.translation(.15, -1.8, .60))
-                    .times(Mat4.scale(.2, .5, .05)),
-                shadow_pass ? this.shadowed_red : this.pure
-            );
+            if(this.scarf) {
+                this.shapes.sphere.draw(
+                    context,
+                    program_state,
+                    miffy_transform
+                        .times(Mat4.translation(0, -1, 0))
+                        .times(Mat4.scale(1, 1, 1)),
+                    shadow_pass ? (this.scarf_red? this.shadowed_red : this.materials.royal) : this.pure
+                );
+                this.shapes.cube.draw(
+                    context,
+                    program_state,
+                    miffy_transform
+                        .times(Mat4.rotation(Math.PI / 8, -1, 0, 1))
+                        .times(Mat4.translation(.15, -1.8, .60))
+                        .times(Mat4.scale(.2, .5, .05)),
+                    shadow_pass ? (this.scarf_red? this.shadowed_red : this.materials.royal) : this.pure
+                );
+            }
         }
 
         //COW
@@ -1381,6 +1400,137 @@ export class Base_Scene extends Scene {
         }
     }
 
+    render_scene_1_no(
+        context,
+        program_state
+    ) {
+        //this scene will be the intro. Miffy will introduce herself then ask if you're ready to embark
+        //on her fun day/journey with her. It will end with a prompt of either yes or no
+        let time = program_state.animation_time/1000;
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-15, 8, 5)
+                .times(Mat4.scale(.5, .5, .5))
+        );
+        this.shapes.text.set_string("Oh, well that's too bad ", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_1_transform,
+            this.materials.text_image
+        );
+        let enter = Mat4.identity().times(
+            Mat4.translation(1.2, 8, 5)
+                .times(Mat4.scale(.4,.4,.4))
+        );
+        this.shapes.text.set_string("[press enter]", context.context);
+        if (Math.floor((time) % 2) === 1) {
+            this.shapes.text.draw(
+                context,
+                program_state,
+                enter,
+                this.materials.text_image
+            );
+        }
+    }
+
+    render_scene_2_a(context, program_state){
+        //this scene will ask if you are ready to embark on Miffy's big day with her
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-15, 8, 5)
+                .times(Mat4.scale(.5,.5,.5))
+        );
+        this.shapes.text.set_string("Help me pick an outfit!", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_1_transform,
+            this.materials.text_image
+        );
+        let Line_4_transform = Mat4.identity().times(
+            Mat4.translation(-15, 7, 5)
+                .times(Mat4.scale(.5,.5,.5))
+        );
+        this.shapes.text.set_string("What color scarf do I wear?", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_4_transform,
+            this.materials.text_image
+        );
+
+        let Button_1 = Mat4.identity().times(
+            Mat4.scale(2.4,1,.01)
+                .times(Mat4.translation(-2, -1.6, 1500)));
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            Button_1,
+            this.materials.black
+        );
+        let Button_1_cover = Button_1.times(
+            Mat4.scale(.98,.95,.5)
+                .times(Mat4.translation(0, 0, 5)));
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            Button_1_cover,
+            this.materials.red
+        );
+        let Line_2_transform = Button_1_cover
+            .times(Mat4.translation(-.27, -.16, 10)
+                .times(Mat4.scale(.15,.3,1)));
+        this.shapes.text.set_string("Red", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_2_transform,
+            this.materials.text_image
+        );
+
+        let Button_2 = Mat4.identity().times(
+            Mat4.scale(2.4,1,.01)
+                .times(Mat4.translation(2, -1.6, 1500)));
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            Button_2,
+            this.materials.black
+        );
+        let Button_2_cover = Button_2.times(
+            Mat4.scale(.98,.95,.5)
+                .times(Mat4.translation(0, 0, 5)));
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            Button_2_cover,
+            this.materials.royal
+        );
+        let Line_3_transform = Button_2_cover
+            .times(Mat4.translation(-.30, -.15, 10)
+                .times(Mat4.scale(.15,.3,1)));
+        this.shapes.text.set_string("Blue", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_3_transform,
+            this.materials.text_image
+        );
+
+    }
+    render_scene_2_red(context,program_state){
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-15, 8, 5)
+                .times(Mat4.scale(.5,.5,.5))
+        );
+        this.shapes.text.set_string("I love it!", context.context);
+        this.shapes.text.draw(
+            context,
+            program_state,
+            Line_1_transform,
+            this.materials.text_image
+        );
+    }
+
     display(context, program_state) {
         // display():  Called once per frame of animation. Here, the base class's display only does
         // some initial setup.
@@ -1556,6 +1706,18 @@ export class Base_Scene extends Scene {
 
 
             // call function render_scene_2
+        } else if (this.scene_2_a){
+            program_state.set_camera(
+                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+            );
+            this.render_scene_2_a(context,program_state);
+        } else if(this.scene_2_red){
+            this.scarf = true;
+            this.scarf_red = true;
+            program_state.set_camera(
+                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+            );
+            this.render_scene_2_red(context,program_state);
         }
     }
 }
