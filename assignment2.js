@@ -381,6 +381,10 @@ export class Base_Scene extends Scene {
         this.scarf_blue = false;
 
 
+        // *** BUTTON STATES *** //
+        this.is_picking = false;
+        this.left_button = false;
+        this.right_button = false;
     }
 
     make_control_panel() {
@@ -391,17 +395,19 @@ export class Base_Scene extends Scene {
             }else if(this.first_scene){
                 this.first_scene = false;
                 this.scene_1_b = true;
-            }else if(this.scene_1_b){
-                this.scene_1_b = false;
-                this.scene_1_yes = true;
-            }else if(this.scene_1_yes){
+            }
+            // else if(this.scene_1_b){
+            //     this.scene_1_b = false;
+            //     this.scene_1_yes = true;
+            // }
+            else if(this.scene_1_yes){
                 this.scene_1_yes = false;
                 this.scene_2_a = true;
-            } else if(this.scene_2_a){
-                this.scene_2_a = false;
-                this.scene_2_red = true;
             }
-
+            // else if(this.scene_2_a){
+            //     this.scene_2_a = false;
+            //     this.scene_2_red = true;
+            // }
         });
     }
 
@@ -1295,6 +1301,7 @@ export class Base_Scene extends Scene {
 
     render_scene_1_b(context, program_state){
         //this scene will ask if you are ready to embark on Miffy's big day with her
+        // console.log("SCENE 1_B: WOULD YOU LIKE TO JOIN");
         let Line_1_transform = Mat4.identity().times(
             Mat4.translation(-15, 8, 5)
                 .times(Mat4.scale(.5,.5,.5))
@@ -1404,6 +1411,8 @@ export class Base_Scene extends Scene {
         context,
         program_state
     ) {
+        console.log("SCENE_1_NO: No, you don't want to join Miffy's day")
+
         //this scene will be the intro. Miffy will introduce herself then ask if you're ready to embark
         //on her fun day/journey with her. It will end with a prompt of either yes or no
         let time = program_state.animation_time/1000;
@@ -1531,6 +1540,58 @@ export class Base_Scene extends Scene {
         );
     }
 
+    option_picker(current_scene) {
+
+        console.log("in option picker")
+        if (current_scene == "scene_1_b") {
+
+            // set picking mode to true
+            this.is_picking = true;
+
+            if (this.left_button) { // yes
+                console.log("left button state = " + this.left_button)
+                this.left_button = false; // reset the button state
+                this.scene_1_b = false; // disable this current one
+                this.scene_1_yes = true; // go to the next one
+
+                // set picking mode to false
+                this.is_picking = false;
+            }
+            if (this.right_button) { // no
+                console.log("right button state = " + this.right_button)
+                this.right_button = false; // reset the button state
+                this.scene_1_b = false; // disable this current one
+                this.scene_1_no = true; // go to the next one
+
+                // set picking mode to false
+                this.is_picking = false;
+            }
+        } else if (current_scene == "scene_2_a") {
+            // set picking mode to true
+            this.is_picking = true;
+
+
+            if (this.left_button) { // yes
+                console.log("left button state = " + this.left_button)
+                this.left_button = false; // reset the button state
+                this.scene_2_a = false; // disable this current one
+                this.scene_2_red = true; // go to the next one
+
+                // set picking mode to false
+                this.is_picking = false;
+            }
+            if (this.right_button) { // no
+                console.log("right button state = " + this.right_button)
+                this.right_button = false; // reset the button state
+                this.scene_2_a = false; // disable this current one
+                this.scene_2_blue = true; // go to the next one
+
+                // set picking mode to false
+                this.is_picking = false;
+            }
+        }
+    }
+
     display(context, program_state) {
         // display():  Called once per frame of animation. Here, the base class's display only does
         // some initial setup.
@@ -1559,103 +1620,106 @@ export class Base_Scene extends Scene {
 
 
             //  *** EVENT LISTENER FOR MOUSE DOWN *** //
+            {
+                let canvas = context.canvas;
+                const mouse_position = (e, rect = canvas.getBoundingClientRect()) =>
+                    vec((e.clientX - (rect.left + rect.right) / 2) / ((rect.right - rect.left) / 2),
+                        (e.clientY - (rect.bottom + rect.top) / 2) / ((rect.top - rect.bottom) / 2));
 
-            let canvas = context.canvas;
-            const mouse_position = (e, rect = canvas.getBoundingClientRect()) =>
-                vec((e.clientX - (rect.left + rect.right) / 2) / ((rect.right - rect.left) / 2),
-                    (e.clientY - (rect.bottom + rect.top) / 2) / ((rect.top - rect.bottom) / 2));
+                canvas.addEventListener("mousedown", e => {
+                    e.preventDefault();
+                    const rect = canvas.getBoundingClientRect();
+                    const midX = (rect.left + rect.right) / 2;
 
-            canvas.addEventListener("mousedown", e => {
-                e.preventDefault();
-                const rect = canvas.getBoundingClientRect();
-                const midX = (rect.left + rect.right) / 2;
+                    // Check if the click is on the left or right side of the canvas
+                    if (this.is_picking) {
+                        if (e.clientX < midX) {
+                            console.log("Click on the left side");
+                            this.left_button = true;
+                        } else {
+                            console.log("Click on the right side");
+                            this.right_button = true;
+                        }
+                    }
 
-                console.log("e.clientX: " + e.clientX);
-                console.log("e.clientX - rect.left: " + (e.clientX - rect.left));
-                console.log("e.clientY: " + e.clientY);
-                console.log("e.clientY - rect.top: " + (e.clientY - rect.top));
-                console.log("mouse_position(e): " + mouse_position(e));
 
-                // Check if the click is on the left or right side of the canvas
-                if (e.clientX < midX) {
-                    console.log("Click on the left side");
-                } else {
-                    console.log("Click on the right side");
-                }
-
-                this.my_mouse_down(e, mouse_position(e), context, program_state);
-            });
+                    this.my_mouse_down(e, mouse_position(e), context, program_state);
+                });
+            }
 
 
         }
 
-        // The position of the light
+        // *** SHADER SHIT DO NOT DELETEEEEEE OR TOUCH *** //
+        {        // The position of the light
 
-        // *** LIGHT POSITION *** //
-        // We could easily adjust this to account for the "time of day"
+            // *** LIGHT POSITION *** //
+            // We could easily adjust this to account for the "time of day"
 
-        this.light_position = Mat4.identity().times(vec4(3, 30, 0, 1));
-        // this.light_position = Mat4.rotation(t / 1500, 0, 1, 0).times(vec4(3, 30, 0, 1));  // this one is like rotating
+            this.light_position = Mat4.identity().times(vec4(3, 30, 0, 1));
+            // this.light_position = Mat4.rotation(t / 1500, 0, 1, 0).times(vec4(3, 30, 0, 1));  // this one is like rotating
 
-        // The color of the light
-        this.light_color = color(1, 0.7490196078431373, 0, 1);
+            // The color of the light
+            this.light_color = color(1, 0.7490196078431373, 0, 1);
 
-        // This is a rough target of the light.
-        // Although the light is point light, we need a target to set the POV of the light
-        this.light_view_target = vec4(0, 0, 0, 1);
-        this.light_field_of_view = (130 * Math.PI) / 180; // 130 degree
+            // This is a rough target of the light.
+            // Although the light is point light, we need a target to set the POV of the light
+            this.light_view_target = vec4(0, 0, 0, 1);
+            this.light_field_of_view = (130 * Math.PI) / 180; // 130 degree
 
-        program_state.lights = [
-            new Light(this.light_position, this.light_color, 1000),
-        ];
+            program_state.lights = [
+                new Light(this.light_position, this.light_color, 1000),
+            ];
 
-        // Step 1: set the perspective and camera to the POV of light
-        const light_view_mat = Mat4.look_at(
-            vec3(
-                this.light_position[0],
-                this.light_position[1],
-                this.light_position[2]
-            ),
-            vec3(
-                this.light_view_target[0],
-                this.light_view_target[1],
-                this.light_view_target[2]
-            ),
-            vec3(0, 1, 0) // assume the light to target will have a up dir of +y, maybe need to change according to your case
-        );
-        const light_proj_mat = Mat4.perspective(
-            this.light_field_of_view,
-            1,
-            0.5,
-            500
-        );
-        // Bind the Depth Texture Buffer
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.lightDepthFramebuffer);
-        gl.viewport(
-            0,
-            0,
-            this.lightDepthTextureSize,
-            this.lightDepthTextureSize
-        );
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        // Prepare uniforms
-        program_state.light_view_mat = light_view_mat;
-        program_state.light_proj_mat = light_proj_mat;
-        program_state.light_tex_mat = light_proj_mat;
-        program_state.view_mat = light_view_mat;
-        program_state.projection_transform = light_proj_mat;
-        this.render_scene(context, program_state, false, false, false);
+            // Step 1: set the perspective and camera to the POV of light
+            const light_view_mat = Mat4.look_at(
+                vec3(
+                    this.light_position[0],
+                    this.light_position[1],
+                    this.light_position[2]
+                ),
+                vec3(
+                    this.light_view_target[0],
+                    this.light_view_target[1],
+                    this.light_view_target[2]
+                ),
+                vec3(0, 1, 0) // assume the light to target will have a up dir of +y, maybe need to change according to your case
+            );
+            const light_proj_mat = Mat4.perspective(
+                this.light_field_of_view,
+                1,
+                0.5,
+                500
+            );
+            // Bind the Depth Texture Buffer
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this.lightDepthFramebuffer);
+            gl.viewport(
+                0,
+                0,
+                this.lightDepthTextureSize,
+                this.lightDepthTextureSize
+            );
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            // Prepare uniforms
+            program_state.light_view_mat = light_view_mat;
+            program_state.light_proj_mat = light_proj_mat;
+            program_state.light_tex_mat = light_proj_mat;
+            program_state.view_mat = light_view_mat;
+            program_state.projection_transform = light_proj_mat;
+            this.render_scene(context, program_state, false, false, false);
 
-        // Step 2: unbind, draw to the canvas
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-        program_state.view_mat = program_state.camera_inverse;
-        program_state.projection_transform = Mat4.perspective(
-            Math.PI / 4,
-            context.width / context.height,
-            0.5,
-            500
-        );
+            // Step 2: unbind, draw to the canvas
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+            program_state.view_mat = program_state.camera_inverse;
+            program_state.projection_transform = Mat4.perspective(
+                Math.PI / 4,
+                context.width / context.height,
+                0.5,
+                500
+            );
+        }
+
         this.render_scene(context, program_state, true, true, true);
         if (this.title) {
             program_state.set_camera(
@@ -1698,12 +1762,14 @@ export class Base_Scene extends Scene {
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_1_b(context, program_state);
+
+            this.option_picker("scene_1_b")
+
         } else if (this.scene_1_yes){
                 program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_1_yes(context,program_state);
-
 
             // call function render_scene_2
         } else if (this.scene_2_a){
@@ -1711,6 +1777,10 @@ export class Base_Scene extends Scene {
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_2_a(context,program_state);
+
+            this.option_picker("scene_2_a")
+
+
         } else if(this.scene_2_red){
             this.scarf = true;
             this.scarf_red = true;
