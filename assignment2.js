@@ -166,6 +166,12 @@ export class Base_Scene extends Scene {
                 diffusivity: 1,
                 specularity: 0,
                 color: hex_color("#FFA500"),
+            }),
+            clear: new Material(new defs.Phong_Shader(),{
+                ambient: 1,
+                diffusivity: 1,
+                specularity: 0,
+                color: hex_color("rgba(255,255,255,0)")
             })
         };
 
@@ -422,13 +428,13 @@ export class Base_Scene extends Scene {
             }
             else if (this.scene_1_no) {
                 this.scene_1_no = false;
-                this.scene_final = true;
+                this.scene_2_a = true;
             }
-            else if (this.scene_2_a) {
-                //Option Picker
-                this.scene_2_a = false;
-                this.scene_2_red = true;
-            } else if (this.scene_2_red) {
+            // else if (this.scene_2_a) {
+            //     //Option Picker
+            //     this.scene_2_a = false;
+            //     this.scene_2_red = true;}
+            else if (this.scene_2_red) {
                 this.scene_2_red = false;
                 this.scene_3_a = true;
 
@@ -439,11 +445,12 @@ export class Base_Scene extends Scene {
             } else if (this.scene_3_a) {
                 this.scene_3_a = false;
                 this.scene_3_b = true;
-            } else if (this.scene_3_b) {
-                //Option Picker
-                this.scene_3_b = false;
-                this.scene_3_lion = true;
-            } else if (this.scene_3_lion) {
+            }
+            // } else if (this.scene_3_b) {
+            //     //Option Picker
+            //     this.scene_3_b = false;
+            //     this.scene_3_lion = true;
+                else if (this.scene_3_lion) {
                 this.scene_3_lion = false;
                 this.scene_4_a = true;
 
@@ -451,11 +458,13 @@ export class Base_Scene extends Scene {
             } else if (this.scene_3_cow) {
                 this.scene_3_cow = false;
                 this.scene_4_a = true;
-            } else if (this.scene_4_a) {
-                //Option Picker
-                this.scene_4_a = false;
-                this.scene_4_orange = true;
-            } else if (this.scene_4_orange) {
+            }
+            //     else if (this.scene_4_a) {
+            //     //Option Picker
+            //     this.scene_4_a = false;
+            //     this.scene_4_orange = true;
+            // }
+                else if (this.scene_4_orange) {
                 this.scene_4_orange = false;
                 this.scene_5_a = true;
 
@@ -1204,7 +1213,7 @@ export class Base_Scene extends Scene {
                     shadow_pass
                         ? this.scarf_red
                             ? this.shadowed_red
-                            : this.materials.royal
+                            : ( this.scarf_blue ? this.materials.royal : this.materials.clear)
                         : this.pure
                 );
                 this.shapes.cube.draw(
@@ -1217,7 +1226,7 @@ export class Base_Scene extends Scene {
                     shadow_pass
                         ? this.scarf_red
                             ? this.shadowed_red
-                            : this.materials.royal
+                            : ( this.scarf_blue ? this.materials.royal : this.materials.clear )
                         : this.pure
                 );
             }
@@ -1734,7 +1743,7 @@ export class Base_Scene extends Scene {
     }
     render_scene_2_blue(context, program_state) {
         let time = program_state.animation_time / 1000;
-        this.scarf_red = false;
+        this.scarf_blue = true;
         let Line_1_transform = Mat4.identity().times(
             Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
         );
@@ -1797,45 +1806,9 @@ export class Base_Scene extends Scene {
             Line_1_transform,
             this.materials.text_image
         );
-        let enter = Mat4.identity().times(
-            Mat4.translation(-7.5, 8, 5).times(Mat4.scale(0.4, 0.4, 0.4))
-        );
-        this.shapes.text.set_string("[press enter]", context.context);
-        if (Math.floor(time % 2) === 1) {
-            this.shapes.text.draw(
-                context,
-                program_state,
-                enter,
-                this.materials.text_image
-            );
-        }
+
     }
 
-    render_scene_3_a(context, program_state) {
-        let time = program_state.animation_time / 1000;
-        let Line_1_transform = Mat4.identity().times(
-            Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
-        );
-        this.shapes.text.set_string("3a", context.context);
-        this.shapes.text.draw(
-            context,
-            program_state,
-            Line_1_transform,
-            this.materials.text_image
-        );
-        let enter = Mat4.identity().times(
-            Mat4.translation(-7.5, 8, 5).times(Mat4.scale(0.4, 0.4, 0.4))
-        );
-        this.shapes.text.set_string("[press enter]", context.context);
-        if (Math.floor(time % 2) === 1) {
-            this.shapes.text.draw(
-                context,
-                program_state,
-                enter,
-                this.materials.text_image
-            );
-        }
-    }
 
     render_scene_3_lion(context, program_state) {
         let time = program_state.animation_time / 1000;
@@ -1901,20 +1874,7 @@ export class Base_Scene extends Scene {
             Line_1_transform,
             this.materials.text_image
         );
-        let enter = Mat4.identity().times(
-            Mat4.translation(7.5, 8, 5)
-                .times(Mat4.scale(.4,.4,.4))
-        );
-        this.shapes.text.set_string("[press enter]", context.context);
-        if (Math.floor(time % 2) === 1) {
-            this.shapes.text.draw(
-                context,
-                program_state,
-                enter,
-                this.materials.text_image
-            );
 
-        }
         let Button_1 = Mat4.identity().times(
             Mat4.scale(2.4,1,.01)
                 .times(Mat4.translation(-2, -1.6, 1500)));
@@ -2277,7 +2237,56 @@ export class Base_Scene extends Scene {
                 // set picking mode to false
                 this.is_picking = false;
             }
-        }
+            } else if (current_scene == "scene_3_b") {
+                // set picking mode to true
+                this.is_picking = true;
+
+                if (this.left_button) {
+                    // yes
+                    console.log("left button state = " + this.left_button);
+                    this.left_button = false; // reset the button state
+                    this.scene_3_b = false; // disable this current one
+                    this.scene_3_lion = true; // go to the next one
+
+                    // set picking mode to false
+                    this.is_picking = false;
+                }
+                if (this.right_button) {
+                    // no
+                    console.log("right button state = " + this.right_button);
+                    this.right_button = false; // reset the button state
+                    this.scene_3_b = false; // disable this current one
+                    this.scene_3_cow = true; // go to the next one
+
+                    // set picking mode to false
+                    this.is_picking = false;
+                }
+            } else if (current_scene == "scene_4_a") {
+                // set picking mode to true
+                this.is_picking = true;
+
+                if (this.left_button) {
+                    // yes
+                    console.log("left button state = " + this.left_button);
+                    this.left_button = false; // reset the button state
+                    this.scene_4_a = false; // disable this current one
+                    this.scene_4_orange = true; // go to the next one
+
+                    // set picking mode to false
+                    this.is_picking = false;
+                }
+                if (this.right_button) {
+                    // no
+                    console.log("right button state = " + this.right_button);
+                    this.right_button = false; // reset the button state
+                    this.scene_4_a = false; // disable this current one
+                    this.scene_4_other = true; // go to the next one
+
+                    // set picking mode to false
+                    this.is_picking = false;
+                }
+            }
+
     }
 
     display(context, program_state) {
@@ -2474,8 +2483,8 @@ export class Base_Scene extends Scene {
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
-            this.render_scene_2_a(context,program_state);
-        } else if(this.scene_2_red){
+            this.render_scene_1_no(context,program_state);
+        } else if(this.scene_2_a){
             this.scarf = true;
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
@@ -2505,6 +2514,7 @@ export class Base_Scene extends Scene {
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_3_b(context, program_state);
+            this.option_picker("scene_3_b");
         } else if (this.scene_3_lion) {
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
@@ -2520,6 +2530,7 @@ export class Base_Scene extends Scene {
                 Mat4.look_at(vec3(17, 1.2, 16), vec3(18, 0, 8), vec3(0, 1, 0))
             );
             this.render_scene_4_a(context, program_state);
+            this.option_picker("scene_4_a");
         } else if (this.scene_4_orange) {
             program_state.set_camera(
                 Mat4.look_at(vec3(17, 1.2, 16), vec3(18, 0, 8), vec3(0, 1, 0))
