@@ -2195,7 +2195,7 @@ export class Base_Scene extends Scene {
         }
 
         let Line_1_transform = Mat4.identity().times(
-            Mat4.translation(-80, 12, 8)
+            Mat4.translation(-76, 12, 8)
                 .times(Mat4.scale(0.9, 0.9, 0.9))
                 .times(Mat4.rotation(13.05, 0, 1, 0))
         );
@@ -2207,7 +2207,7 @@ export class Base_Scene extends Scene {
             this.materials.text_image
         );
         let enter = Mat4.identity().times(
-            Mat4.translation(-42, 7.1, 8)
+            Mat4.translation(-40, 7.1, 8)
                 .times(Mat4.scale(0.4, 0.4, 0.4))
                 .times(Mat4.rotation(13.05, 0, 1, 0))
         );
