@@ -434,7 +434,7 @@ export class Base_Scene extends Scene {
             }
             else if (this.scene_1_no) {
                 this.scene_1_no = false;
-                this.scene_2_a = true;
+                this.scene_final = true;
             }
             // else if (this.scene_2_a) {
             //     //Option Picker
@@ -453,16 +453,14 @@ export class Base_Scene extends Scene {
                 this.scene_3_b = true;
                 this.miffy_transform = this.miffy_transform.times(Mat4.translation(0, 0, -7))
                     .times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(-24, 0, -20));
-            } else if (this.scene_3_b) {
-                    //Option Picker
-                    this.scene_3_b = false;
-                    this.scene_3_lion = true;
             }
+            // else if (this.scene_3_b) {
+            //         this.scene_3_b = false;
+            //         this.scene_3_lion = true;
+            // }
             else if (this.scene_3_lion) {
-            this.scene_3_lion = false;
-            this.scene_4_a = true;
-
-                //No current mapping to cow
+                this.scene_3_lion = false;
+                this.scene_4_a = true;
             } else if (this.scene_3_cow) {
                 this.scene_3_cow = false;
                 this.scene_4_a = true;
@@ -1883,18 +1881,22 @@ export class Base_Scene extends Scene {
 
     render_scene_3_lion(context, program_state) {
         let time = program_state.animation_time / 1000;
-        let Line_1_transform = Mat4.identity().times(
-            Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
+
+        let new_origin = Mat4.identity().times(Mat4.rotation(-Math.PI/1.5, 0, 1, 0))
+            .times(Mat4.translation(45, 0, 20));
+
+        let Line_1_transform = new_origin.times(
+            Mat4.translation(5, 7, 2).times(Mat4.scale(0.5, 0.5, 0.5))
         );
-        this.shapes.text.set_string("lion", context.context);
+        this.shapes.text.set_string("Wow! So Majestic!", context.context);
         this.shapes.text.draw(
             context,
             program_state,
             Line_1_transform,
             this.materials.text_image
         );
-        let enter = Mat4.identity().times(
-            Mat4.translation(-7.5, 8, 5).times(Mat4.scale(0.4, 0.4, 0.4))
+        let enter = Line_1_transform.times(
+            Mat4.translation(0, -3, 0).times(Mat4.scale(0.6, 0.6, 0.6))
         );
         this.shapes.text.set_string("[press enter]", context.context);
         if (Math.floor(time % 2) === 1) {
@@ -2255,79 +2257,31 @@ export class Base_Scene extends Scene {
                 // set picking mode to false
                 this.is_picking = false;
             }
-        }
-    }
-
-    option_picker(current_scene) {
-        console.log("in option picker");
-        if (current_scene == "scene_1_b") {
-            // set picking mode to true
-            this.is_picking = true;
-
-            if (this.left_button) {
-                // yes
-                console.log("left button state = " + this.left_button);
-                this.left_button = false; // reset the button state
-                this.scene_1_b = false; // disable this current one
-                this.scene_1_yes = true; // go to the next one
-
-                // set picking mode to false
-                this.is_picking = false;
-            }
-            if (this.right_button) {
-                // no
-                console.log("right button state = " + this.right_button);
-                this.right_button = false; // reset the button state
-                this.scene_1_b = false; // disable this current one
-                this.scene_1_no = true; // go to the next one
-
-                // set picking mode to false
-                this.is_picking = false;
-            }
-        } else if (current_scene == "scene_2_a") {
-            // set picking mode to true
-            this.is_picking = true;
-
-            if (this.left_button) {
-                // yes
-                console.log("left button state = " + this.left_button);
-                this.left_button = false; // reset the button state
-                this.scene_2_a = false; // disable this current one
-                this.scene_2_red = true; // go to the next one
-
-                // set picking mode to false
-                this.is_picking = false;
-            }
-            if (this.right_button) {
-                // no
-                console.log("right button state = " + this.right_button);
-                this.right_button = false; // reset the button state
-                this.scene_2_a = false; // disable this current one
-                this.scene_2_blue = true; // go to the next one
-
-                // set picking mode to false
-                this.is_picking = false;
-            }
             } else if (current_scene == "scene_3_b") {
                 // set picking mode to true
                 this.is_picking = true;
 
                 if (this.left_button) {
-                    // yes
+                    // cow
                     console.log("left button state = " + this.left_button);
                     this.left_button = false; // reset the button state
                     this.scene_3_b = false; // disable this current one
-                    this.scene_3_lion = true; // go to the next one
+                    this.scene_3_cow = true; // go to the next one
 
                     // set picking mode to false
                     this.is_picking = false;
                 }
                 if (this.right_button) {
-                    // no
+                    // lion
                     console.log("right button state = " + this.right_button);
                     this.right_button = false; // reset the button state
                     this.scene_3_b = false; // disable this current one
-                    this.scene_3_cow = true; // go to the next one
+                    this.scene_3_lion = true; // go to the next one
+                    this.miffy_transform = this.miffy_transform.times(Mat4.translation(24, 0, 27))
+                        .times(Mat4.rotation(Math.PI, 0, 1, 0)).times(Mat4.translation(25, 0, 50));
+
+                // this.miffy_transform = this.miffy_transform.times(Mat4.translation(0, 0, -7))
+                //     .times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(-24, 0, -20));
 
                     // set picking mode to false
                     this.is_picking = false;
@@ -2588,7 +2542,7 @@ export class Base_Scene extends Scene {
             this.option_picker("scene_3_b");
         } else if (this.scene_3_lion) {
             program_state.set_camera(
-                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+                Mat4.look_at(vec3(-60, 0, 22), vec3(-40, 2, 35), vec3(0, 1, 0))
             );
             this.render_scene_3_lion(context, program_state);
         } else if (this.scene_3_cow) {
