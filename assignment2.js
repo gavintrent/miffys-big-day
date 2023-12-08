@@ -1181,16 +1181,16 @@ export class Base_Scene extends Scene {
                 context,
                 program_state,
                 this.miffy_transform
-                    .times(Mat4.translation(0.5, 0, 1.2))
-                    .times(Mat4.scale(0.1, 0.1, 0.1)),
+                    .times(Mat4.translation(0.6, 0, 1.2))
+                    .times(Mat4.scale(0.1, 0.15, 0.1)),
                 this.materials.black
             );
             this.shapes.sphere.draw(
                 context,
                 program_state,
                 this.miffy_transform
-                    .times(Mat4.translation(-0.5, 0, 1.2))
-                    .times(Mat4.scale(0.1, 0.1, 0.1)),
+                    .times(Mat4.translation(-0.6, 0, 1.2))
+                    .times(Mat4.scale(0.1, 0.15, 0.1)),
                 this.materials.black
             );
             this.shapes.cube.draw(
@@ -1244,7 +1244,8 @@ export class Base_Scene extends Scene {
         //COW
         let cow_body_transform = Mat4.identity()
             .times(Mat4.translation(-45, -0.2, 13))
-            .times(Mat4.scale(3, 2, 2));
+            .times(Mat4.scale(3, 2, 2))
+            .times(Mat4.rotation(0.8, 0, 1, 0));
         this.shapes.ball.draw(
             context,
             program_state,
@@ -1909,12 +1910,94 @@ export class Base_Scene extends Scene {
         }
     }
 
-    render_scene_3_cow(context, program_state) {
+    render_scene_3_cow(context, program_state, shadow_pass, draw_light_source = false, draw_shadow = false) {
         let time = program_state.animation_time / 1000;
-        let Line_1_transform = Mat4.identity().times(
-            Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
+        program_state.draw_shadow = draw_shadow;
+
+        if (draw_light_source && shadow_pass) {
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                Mat4.translation(
+                    light_position[0],
+                    light_position[1],
+                    light_position[2]
+                ).times(Mat4.scale(0.5, 0.5, 0.5)),
+                this.light_src.override({ color: light_color })
+            );
+        }
+
+        let miffy_cow_transform = Mat4.identity().times(
+            Mat4.translation(-43, 0, 24.5).times(Mat4.scale(0.6, 0.6, 0.6)).times(Mat4.rotation(-5, 0, 1, 0))
+                // .times(Mat4.rotation(13.05, 0, 1, 0))
         );
-        this.shapes.text.set_string("cow", context.context);
+        this.shapes.miffy.draw(context, program_state, miffy_cow_transform, shadow_pass ? this.shadowed_miffy : this.pure);
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            miffy_cow_transform
+                .times(Mat4.translation(0.6, 0, 1.2))
+                .times(Mat4.scale(0.1, 0.15, 0)),
+            this.materials.black
+        );
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            miffy_cow_transform
+                .times(Mat4.translation(-0.6, 0, 1.2))
+                .times(Mat4.scale(0.1, 0.15, 0)),
+            this.materials.black
+        );
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            miffy_cow_transform
+                .times(Mat4.rotation(Math.PI / 6, 0, 0, 1))
+                .times(Mat4.translation(-0.25, -0.4, 1.15))
+                .times(Mat4.scale(0.15, 0.03, 0.1)),
+            this.materials.black
+        );
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            miffy_cow_transform
+                .times(Mat4.rotation(-Math.PI / 6, 0, 0, 1))
+                .times(Mat4.translation(0.25, -0.4, 1.15))
+                .times(Mat4.scale(0.15, 0.03, 0.1)),
+            this.materials.black
+        );
+        if (this.scarf) {
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                miffy_cow_transform
+                    .times(Mat4.translation(0, -1, 0))
+                    .times(Mat4.scale(1, 1, 1)),
+                shadow_pass
+                    ? this.scarf_red
+                        ? this.shadowed_red
+                        : (this.scarf_blue ? this.materials.royal : this.materials.clear)
+                    : this.pure
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                miffy_cow_transform
+                    .times(Mat4.rotation(Math.PI / 8, -1, 0, 1))
+                    .times(Mat4.translation(0.15, -1.8, 0.6))
+                    .times(Mat4.scale(0.2, 0.5, 0.05)),
+                shadow_pass
+                    ? this.scarf_red
+                        ? this.shadowed_red
+                        : (this.scarf_blue ? this.materials.royal : this.materials.clear)
+                    : this.pure
+            );
+        }
+
+        let Line_1_transform = Mat4.identity().times(
+            Mat4.translation(-80, 12, 8).times(Mat4.scale(0.9, 0.9, 0.9)).times(Mat4.rotation(13.05, 0, 1, 0))
+        );
+        this.shapes.text.set_string("look! this cow is so cute!", context.context);
         this.shapes.text.draw(
             context,
             program_state,
@@ -1922,7 +2005,7 @@ export class Base_Scene extends Scene {
             this.materials.text_image
         );
         let enter = Mat4.identity().times(
-            Mat4.translation(-7.5, 8, 5).times(Mat4.scale(0.4, 0.4, 0.4))
+            Mat4.translation(-42, 7.1, 8).times(Mat4.scale(0.4, 0.4, 0.4)).times(Mat4.rotation(13.05, 0, 1, 0))
         );
         this.shapes.text.set_string("[press enter]", context.context);
         if (Math.floor(time % 2) === 1) {
@@ -2547,9 +2630,9 @@ export class Base_Scene extends Scene {
             this.render_scene_3_lion(context, program_state);
         } else if (this.scene_3_cow) {
             program_state.set_camera(
-                Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
+                Mat4.look_at(vec3(-35, 1, 29), vec3(-50, 0, 0), vec3(0, 1, 0))
             );
-            this.render_scene_3_cow(context, program_state);
+            this.render_scene_3_cow(context, program_state, true);
         } else if (this.scene_4_a) {
             program_state.set_camera(
                 Mat4.look_at(vec3(17, 1.2, 16), vec3(18, 0, 8), vec3(0, 1, 0))
