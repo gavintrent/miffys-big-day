@@ -47,7 +47,7 @@ export class Base_Scene extends Scene {
             square: new defs.Square(),
             triangle: new defs.Triangle(),
 
-            sphere: new (defs.Subdivision_Sphere)(
+            sphere: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(
                 4
             ),
             fence2: new Shape_From_File("assets/fence2.obj"),
@@ -398,8 +398,8 @@ export class Base_Scene extends Scene {
         this.init_ok = false;
 
         // *** FLAGS
-        this.title = true; //title screen
-        this.first_scene = false; //Im miffy intro
+        this.title = false; //title screen
+        this.first_scene = true; //Im miffy intro
         this.scene_1_b = false; //Do you wanna join?
         this.scene_1_yes = false; //yay, im so excited
         this.scene_1_no = false; //oh, thats too bad
@@ -435,6 +435,7 @@ export class Base_Scene extends Scene {
         //TIME
         this.balloon_start = -1;
         this.final_start = -1;
+        this.scene1_move = -1;
     }
 
     make_control_panel() {
@@ -456,7 +457,7 @@ export class Base_Scene extends Scene {
             }
             else if (this.scene_1_no) {
                 this.scene_1_no = false;
-                this.scene_2_a = true;
+                this.scene_final = true;
             }
             // else if (this.scene_2_a) {
             //     //Option Picker
@@ -2610,66 +2611,6 @@ export class Base_Scene extends Scene {
             this.materials.royal);
         this.render_dog(context, program_state, true, 48+time-this.final_start);
     }
-    // render_clouds(context, program_state) {
-    //     let time = program_state.animation_time / 1000;
-    //     let cloud_1_transform = Mat4.identity().times(
-    //         Mat4.translation(-7, 60, 0).times(Mat4.scale(3, 3, 3))
-    //     );
-    //     this.shapes.ball.draw(
-    //         context,
-    //         program_state,
-    //         cloud_1_transform,
-    //         this.materials.cloud
-    //     );
-    //     const cloud_scale = Mat4.scale(0.8, 0.8, 0.8);
-    //     const cloud_positions = [
-    //         [-1, 0, 0],
-    //         [-1, 0, -5],
-    //         [-2.5, -0.5, -2],
-    //         [-6, 0, -5],
-    //     ]; // Positions for the horns
-    //
-    //     for (let pos of cloud_positions) {
-    //         let cloud_transform = cloud_1_transform
-    //             .times(Mat4.translation(...pos))
-    //             .times(cloud_scale);
-    //         this.shapes.ball.draw(
-    //             context,
-    //             program_state,
-    //             cloud_transform,
-    //             this.materials.cloud
-    //         );
-    //     }
-    //
-    //     let cloud_2_transform = Mat4.identity().times(
-    //         Mat4.translation(30, 60, 5).times(Mat4.scale(3, 3, 3))
-    //     );
-    //     this.shapes.ball.draw(
-    //         context,
-    //         program_state,
-    //         cloud_2_transform,
-    //         this.materials.cloud
-    //     );
-    //     const cloud_scale_2 = Mat4.scale(0.8, 0.8, 0.8);
-    //     const cloud_positions_2 = [
-    //         [-1, 0, 0],
-    //         [-0.1, 0, -5],
-    //         [-0.5, -0.5, -2],
-    //         [3, 0, -5],
-    //     ];
-    //
-    //     for (let pos of cloud_positions_2) {
-    //         let cloud_transform = cloud_2_transform
-    //             .times(Mat4.translation(...pos))
-    //             .times(cloud_scale_2);
-    //         this.shapes.ball.draw(
-    //             context,
-    //             program_state,
-    //             cloud_transform,
-    //             this.materials.cloud
-    //         );
-    //     }
-    // }
 
     render_clouds(context, program_state) {
         let time = program_state.animation_time / 1000;
@@ -3050,8 +2991,6 @@ export class Base_Scene extends Scene {
         );
 
     }
-
-
 
     display(context, program_state) {
         // display():  Called once per frame of animation. Here, the base class's display only does
