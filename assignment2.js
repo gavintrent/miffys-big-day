@@ -413,6 +413,10 @@ export class Base_Scene extends Scene {
 
         //TRANSFORMATION MATRICES
         this.miffy_transform = Mat4.identity().times(Mat4.translation(0, 0, 7));
+
+        //TIME
+        this.balloon_start = -1;
+        this.final_start = -1;
     }
 
     make_control_panel() {
@@ -2178,6 +2182,9 @@ export class Base_Scene extends Scene {
 
     render_scene_5_b(context, program_state) {
         const time = program_state.animation_time / 1000;
+        if (this.balloon_start === -1) {
+            this.balloon_start = time;
+        }
         let Line_1_transform = Mat4.identity().times(
             Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
         );
@@ -2216,20 +2223,40 @@ export class Base_Scene extends Scene {
                 this.materials.text_image
             );
         }
+        this.shapes.sphere.draw(context, program_state,
+            Mat4.identity().times(Mat4.translation(0, 2.2+ time - this.balloon_start, 7)).times(Mat4.scale(0.03, 2.1, 0.03)),
+            this.materials.wall);
+        this.shapes.sphere.draw(context, program_state,
+            Mat4.identity().times(Mat4.translation(0, 3.5 + time - this.balloon_start, 7)).times(Mat4.scale(0.6, 0.75, 0.6)),
+            this.materials.red);
+
+        this.render_miffy(context, program_state, true, (time-this.balloon_start))
     }
 
     render_scene_final(context, program_state) {
         let time = program_state.animation_time / 1000;
-        let Line_1_transform = Mat4.identity().times(
-            Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
-        );
-        this.shapes.text.set_string("Fin.", context.context);
+
+        if (this.final_start === -1) {
+            this.final_start = time;
+        }
+        this.render_clouds(context, program_state,true);
+        let title_transform = Mat4.identity()
+            .times(Mat4.translation(2.5, 57, 0))
+            .times(Mat4.scale(1.5, 1.5, 1.5));
+        this.shapes.text.set_string("The End.", context.context);
         this.shapes.text.draw(
             context,
             program_state,
-            Line_1_transform,
+            title_transform,
             this.materials.text_image
         );
+        this.shapes.sphere.draw(context, program_state,
+            Mat4.identity().times(Mat4.translation(0, 51.4 + time - this.balloon_start, 7)).times(Mat4.scale(0.03, 2.1, 0.03)),
+            this.materials.wall);
+        this.shapes.sphere.draw(context, program_state,
+            Mat4.identity().times(Mat4.translation(0, 52.7 + time - this.balloon_start, 7)).times(Mat4.scale(0.6, 0.75, 0.6)),
+            this.materials.red);
+        this.render_miffy(context, program_state, true, 50+time-this.final_start);
     }
     render_clouds(context, program_state) {
         let time = program_state.animation_time / 1000;
@@ -2398,9 +2425,9 @@ export class Base_Scene extends Scene {
             }
 
     }
-    render_miffy(context,program_state,shadow_pass){
+    render_miffy(context,program_state,shadow_pass,y_position){
         let miffy_cow_transform = Mat4.identity().times(
-            Mat4.translation(0, 0, 7)
+            Mat4.translation(0, y_position, 7)
             // .times(Mat4.rotation(13.05, 0, 1, 0))
         );
         this.shapes.miffy.draw(context, program_state, miffy_cow_transform, shadow_pass ? this.shadowed_miffy : this.pure);
@@ -2724,28 +2751,17 @@ export class Base_Scene extends Scene {
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_5_a(context, program_state);
-            this.render_miffy(context,program_state,true)
+            this.render_miffy(context,program_state,true, 0)
         } else if (this.scene_5_b) {
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_5_b(context, program_state);
-            this.render_miffy(context,program_state,true);
         } else if (this.scene_final) {
             program_state.set_camera(
                 Mat4.look_at(vec3(10, 55, 30), vec3(10, 55, 0), vec3(0, 1, 0))
             );
-            this.render_clouds(context, program_state,true);
-            let title_transform = Mat4.identity()
-                .times(Mat4.translation(2.5, 57, 0))
-                .times(Mat4.scale(1.5, 1.5, 1.5));
-            this.shapes.text.set_string("The End.", context.context);
-            this.shapes.text.draw(
-                context,
-                program_state,
-                title_transform,
-                this.materials.text_image
-            );
+            this.render_scene_final(context, program_state);
         }
 
         if (this.attached !== undefined) {
