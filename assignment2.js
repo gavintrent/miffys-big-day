@@ -441,7 +441,7 @@ export class Base_Scene extends Scene {
         this.key_triggered_button("Enter", ["Enter"], () => {
             if (this.title) {
                 this.title = false;
-                this.first_scene = true;
+                this.first_scene= true;
             } else if (this.first_scene) {
                 this.first_scene = false;
                 this.scene_1_b = true;
@@ -835,6 +835,49 @@ export class Base_Scene extends Scene {
                 shadow_pass ? this.shadowed_picnic : this.pure
             );
         }
+        let bush = Mat4.identity();
+        this.shapes.ball.draw(
+            context,
+            program_state,
+            bush
+                .times(Mat4.translation(30, -3, 3))
+                .times(Mat4.scale(2, 2, 2)),
+            shadow_pass ? this.shadowed_green : this.pure
+        );
+        this.shapes.ball.draw(
+            context,
+            program_state,
+            bush
+                .times(Mat4.translation(31, -3.2, 4))
+                .times(Mat4.scale(1.8, 1.8, 1.8)),
+            shadow_pass ? this.shadowed_green : this.pure
+        );
+        this.shapes.ball.draw(
+            context,
+            program_state,
+            bush
+                .times(Mat4.translation(30.5, -3.6, 4.9))
+                .times(Mat4.scale(1.7, 1.7, 1.7)),
+            shadow_pass ? this.shadowed_green : this.pure
+        );
+        this.shapes.ball.draw(
+            context,
+            program_state,
+            bush
+                .times(Mat4.translation(28, -3.6, 3))
+                .times(Mat4.scale(1.7, 1.7, 1.7)),
+            shadow_pass ? this.shadowed_green : this.pure
+        );
+        this.shapes.ball.draw(
+            context,
+            program_state,
+            bush
+                .times(Mat4.translation(29, -2.9, 4))
+                .times(Mat4.scale(1.3, 1.3, 1.3)),
+            shadow_pass ? this.shadowed_green : this.pure
+        );
+
+
 
         //TREES
         {
@@ -867,6 +910,60 @@ export class Base_Scene extends Scene {
             tree_transform = tree_transform
                 .times(Mat4.translation(0, 0, 0))
                 .times(Mat4.rotation(Math.PI, 0, 1, 0));
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                tree_transform
+                    .times(Mat4.translation(15, -3, 0))
+                    .times(Mat4.scale(0.7, 10, 0.7)),
+                shadow_pass ? this.shadowed_wood : this.pure
+            );
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                tree_transform
+                    .times(Mat4.translation(15, 4, 0))
+                    .times(Mat4.scale(3.5, 3.5, 3.5)),
+                shadow_pass ? this.shadowed_green : this.pure
+            );
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                tree_transform
+                    .times(Mat4.rotation(Math.PI / 4, 0, 0, 1))
+                    .times(Mat4.translation(9, -11, 0))
+                    .times(Mat4.scale(0.3, 1, 0.3)),
+                shadow_pass ? this.shadowed_wood : this.pure
+            );
+            tree_transform = tree_transform
+                .times(Mat4.translation(-40,0,10));
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                tree_transform
+                    .times(Mat4.translation(15, -3, 0))
+                    .times(Mat4.scale(0.7, 10, 0.7)),
+                shadow_pass ? this.shadowed_wood : this.pure
+            );
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                tree_transform
+                    .times(Mat4.translation(15, 4, 0))
+                    .times(Mat4.scale(3.5, 3.5, 3.5)),
+                shadow_pass ? this.shadowed_green : this.pure
+            );
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                tree_transform
+                    .times(Mat4.rotation(Math.PI / 4, 0, 0, 1))
+                    .times(Mat4.translation(9, -11, 0))
+                    .times(Mat4.scale(0.3, 1, 0.3)),
+                shadow_pass ? this.shadowed_wood : this.pure
+            );
+            tree_transform = tree_transform
+                .times(Mat4.translation(-5,0,-7));
             this.shapes.sphere.draw(
                 context,
                 program_state,
