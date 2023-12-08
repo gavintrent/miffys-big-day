@@ -298,8 +298,8 @@ export class Base_Scene extends Scene {
         this.shadowed_wood = new Material(new Shadow_Textured_Phong_Shader(1), {
             color: color(0.231, 0.184, 0.113, 1),
             ambient: 0.9,
-            diffusivity: 0.1,
-            specularity: 0,
+            diffusivity: 0.65,
+            specularity: 1,
             smoothness: 64,
             color_texture: null,
             light_depth_texture: null,
@@ -425,6 +425,10 @@ export class Base_Scene extends Scene {
 
         //TRANSFORMATION MATRICES
         this.miffy_transform = Mat4.identity().times(Mat4.translation(0, 0, 7));
+
+        //TIME
+        this.balloon_start = -1;
+        this.final_start = -1;
     }
 
     make_control_panel() {
@@ -2208,6 +2212,9 @@ export class Base_Scene extends Scene {
         );
 
         const time = program_state.animation_time / 1000;
+        if (this.balloon_start === -1) {
+            this.balloon_start = time;
+        }
         let Line_1_transform = Mat4.identity().times(
             Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
         );
@@ -2246,20 +2253,40 @@ export class Base_Scene extends Scene {
                 this.materials.text_image
             );
         }
+        this.shapes.sphere.draw(context, program_state,
+            Mat4.identity().times(Mat4.translation(0, 2.2+ time - this.balloon_start, 7)).times(Mat4.scale(0.03, 2.1, 0.03)),
+            this.materials.wall);
+        this.shapes.sphere.draw(context, program_state,
+            Mat4.identity().times(Mat4.translation(0, 3.5 + time - this.balloon_start, 7)).times(Mat4.scale(0.6, 0.75, 0.6)),
+            this.materials.red);
+
+        this.render_miffy(context, program_state, true, (time-this.balloon_start))
     }
 
     render_scene_final(context, program_state) {
         let time = program_state.animation_time / 1000;
-        let Line_1_transform = Mat4.identity().times(
-            Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
-        );
-        this.shapes.text.set_string("Fin.", context.context);
+
+        if (this.final_start === -1) {
+            this.final_start = time;
+        }
+        this.render_clouds(context, program_state,true);
+        let title_transform = Mat4.identity()
+            .times(Mat4.translation(2.5, 57, 0))
+            .times(Mat4.scale(1.5, 1.5, 1.5));
+        this.shapes.text.set_string("The End.", context.context);
         this.shapes.text.draw(
             context,
             program_state,
-            Line_1_transform,
+            title_transform,
             this.materials.text_image
         );
+        this.shapes.sphere.draw(context, program_state,
+            Mat4.identity().times(Mat4.translation(0, 51.4 + time - this.final_start, 7)).times(Mat4.scale(0.03, 2.1, 0.03)),
+            this.materials.wall);
+        this.shapes.sphere.draw(context, program_state,
+            Mat4.identity().times(Mat4.translation(0, 52.7 + time - this.final_start, 7)).times(Mat4.scale(0.6, 0.75, 0.6)),
+            this.materials.red);
+        this.render_miffy(context, program_state, true, 50+time-this.final_start);
     }
     // render_clouds(context, program_state) {
     //     let time = program_state.animation_time / 1000;
@@ -2498,9 +2525,9 @@ export class Base_Scene extends Scene {
             }
 
     }
-    render_miffy(context,program_state,shadow_pass){
+    render_miffy(context,program_state,shadow_pass,y_position){
         let miffy_cow_transform = Mat4.identity().times(
-            Mat4.translation(0, 0, 7)
+            Mat4.translation(0, y_position, 7)
             // .times(Mat4.rotation(13.05, 0, 1, 0))
         );
         this.shapes.miffy.draw(context, program_state, miffy_cow_transform, shadow_pass ? this.shadowed_miffy : this.pure);
@@ -2566,6 +2593,143 @@ export class Base_Scene extends Scene {
             );
         }
     }
+
+    render_dog(context,program_state,shadow_pass){
+        let dog_transform = Mat4.identity().times(
+            Mat4.translation(2, -2.36, 9)
+            // .times(Mat4.rotation(13.05, 0, 1, 0))
+        );
+        this.shapes.ball.draw(
+            context,
+            program_state,
+            dog_transform
+                .times(Mat4.scale(.6,.5,.8)),
+            shadow_pass ? this.shadowed_wood : this.pure
+        );
+        let head_transform = dog_transform.times(
+            Mat4.translation(0,.6,.6)
+        )
+        this.shapes.ball.draw(
+            context,
+            program_state,
+            head_transform
+                .times(Mat4.scale(.52,.52,.52)),
+            shadow_pass ? this.shadowed_wood : this.pure
+        );
+
+
+        const ear_scale = Mat4.scale(0.15, 0.3, 0.3); // Scale for the horns
+
+        let ear_1_transform = head_transform
+            .times(Mat4.translation(0.5, .15, 0.1))
+            .times(Mat4.rotation(.7,0,0,1))
+            .times(ear_scale);
+        this.shapes.ball.draw(
+            context,
+            program_state,
+            ear_1_transform,
+            shadow_pass ? this.shadowed_wood : this.pure
+        );
+        let ear_2_transform = head_transform
+            .times(Mat4.translation(-0.5, .15, 0.1))
+            .times(Mat4.rotation(-.7,0,0,1))
+            .times(ear_scale);
+        this.shapes.ball.draw(
+            context,
+            program_state,
+            ear_2_transform,
+            shadow_pass ? this.shadowed_wood : this.pure
+        );
+
+        const leg_scale = Mat4.scale(0.18, 0.5, 0.18);
+        let leg_1_transform = dog_transform
+            .times(Mat4.translation(0.45, -.15, .55))
+            .times(Mat4.rotation(.5,-.2,0,.05))
+            .times(leg_scale);
+        this.shapes.ball.draw(
+            context,
+            program_state,
+            leg_1_transform,
+            shadow_pass ? this.shadowed_wood : this.pure
+        );
+        let leg_2_transform = dog_transform
+            .times(Mat4.translation(-0.45, -.15, .55))
+            .times(Mat4.rotation(.5,-.2,0,-.05))
+            .times(leg_scale);
+        this.shapes.ball.draw(
+            context,
+            program_state,
+            leg_2_transform,
+            shadow_pass ? this.shadowed_wood : this.pure
+        );
+        let leg_3_transform = dog_transform
+            .times(Mat4.translation(0.4, -.15, -.4))
+            .times(Mat4.rotation(.5,.2,0,-.02))
+            .times(leg_scale);
+        this.shapes.ball.draw(
+            context,
+            program_state,
+            leg_3_transform,
+            shadow_pass ? this.shadowed_wood : this.pure
+        );
+        let leg_4_transform = dog_transform
+            .times(Mat4.translation(-0.4, -.15, -.4))
+            .times(Mat4.rotation(.5,.2,0,.02))
+            .times(leg_scale);
+        this.shapes.ball.draw(
+            context,
+            program_state,
+            leg_4_transform,
+            shadow_pass ? this.shadowed_wood : this.pure
+        );
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            head_transform
+                .times(Mat4.rotation(Math.PI / 8, 0, 0, 1))
+                .times(Mat4.translation(0.22, -.12, .5))
+                .times(Mat4.scale(0.05, 0.07, 0)),
+            this.materials.black
+        );
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            head_transform
+                .times(Mat4.rotation(-Math.PI / 8, 0, 0, 1))
+                .times(Mat4.translation(-0.22, -.12, .5))
+                .times(Mat4.scale(0.05, 0.07, 0)),
+            this.materials.black
+        );
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            head_transform
+                .times(Mat4.translation(0, -.1, .55))
+                .times(Mat4.scale(0.06, 0.04, 0)),
+            this.materials.black
+        );
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            head_transform
+                .times(Mat4.rotation(Math.PI / 6, 0, 0, 1))
+                .times(Mat4.translation(-0.13, -0.13, .5))
+                .times(Mat4.scale(0.07, 0.015, 0.01)),
+            this.materials.black
+        );
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            head_transform
+                .times(Mat4.rotation(-Math.PI / 6, 0, 0, 1))
+                .times(Mat4.translation(0.13, -0.13, .5))
+                .times(Mat4.scale(0.07, 0.015, 0.01)),
+            this.materials.black
+        );
+
+    }
+
+
 
     display(context, program_state) {
         // display():  Called once per frame of animation. Here, the base class's display only does
@@ -2706,6 +2870,7 @@ export class Base_Scene extends Scene {
 
         //MAIN RENDERING
         this.render_scene(context, program_state, true, true, true);
+        this.render_dog(context,program_state,true);
         if (this.title) {
             this.render_clouds(context, program_state);
             program_state.set_camera(
@@ -2824,13 +2989,12 @@ export class Base_Scene extends Scene {
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_5_a(context, program_state);
-            this.render_miffy(context,program_state,true)
+            this.render_miffy(context,program_state,true, 0)
         } else if (this.scene_5_b) {
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_5_b(context, program_state);
-            this.render_miffy(context,program_state,true);
         } else if (this.scene_final) {
             this.shapes.sphere.draw(context, program_state,
                 Mat4.identity()
@@ -2841,17 +3005,7 @@ export class Base_Scene extends Scene {
             program_state.set_camera(
                 Mat4.look_at(vec3(10, 55, 30), vec3(10, 55, 0), vec3(0, 1, 0))
             );
-            this.render_clouds(context, program_state,true);
-            let title_transform = Mat4.identity()
-                .times(Mat4.translation(2.5, 57, 0))
-                .times(Mat4.scale(1.5, 1.5, 1.5));
-            this.shapes.text.set_string("The End.", context.context);
-            this.shapes.text.draw(
-                context,
-                program_state,
-                title_transform,
-                this.materials.text_image
-            );
+            this.render_scene_final(context, program_state);
         }
 
         if (this.attached !== undefined) {
