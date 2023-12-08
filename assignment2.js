@@ -410,7 +410,7 @@ export class Base_Scene extends Scene {
         this.scene_3_b = false; //what animal do i see?
         this.scene_3_lion = false; // So cool! (stare at lion)
         this.scene_3_cow = false; //so cool! (stare at cow)
-        this.scene_4_a = true; //What should I eat?
+        this.scene_4_a = false; //What should I eat?
         this.scene_4_orange = false; //orange table
         this.scene_4_other = false; //other food on the table
         this.scene_5_a = false; //Wow what a long day
