@@ -47,7 +47,7 @@ export class Base_Scene extends Scene {
             square: new defs.Square(),
             triangle: new defs.Triangle(),
 
-            sphere: new (defs.Subdivision_Sphere.prototype.make_flat_shaded_version())(
+            sphere: new (defs.Subdivision_Sphere)(
                 4
             ),
             fence2: new Shape_From_File("assets/fence2.obj"),
@@ -172,7 +172,13 @@ export class Base_Scene extends Scene {
                 diffusivity: 1,
                 specularity: 0,
                 color: hex_color("rgba(255,255,255,0)")
-            })
+            }),
+            watermelon: new Material(new defs.Textured_Phong(1), {
+                ambient: 1,
+                diffusivity: 0,
+                specularity: 0,
+                texture: new Texture("assets/watermelon.png"),
+            }),
         };
 
         // ** Example of how to add a texture to material AND have shadow ** //
@@ -380,7 +386,7 @@ export class Base_Scene extends Scene {
         this.init_ok = false;
 
         // *** FLAGS
-        this.title = true; //title screen
+        this.title = false; //title screen
         this.first_scene = false; //Im miffy intro
         this.scene_1_b = false; //Do you wanna join?
         this.scene_1_yes = false; //yay, im so excited
@@ -390,7 +396,7 @@ export class Base_Scene extends Scene {
         this.scene_2_blue = false; // I love it!( blue toggle)
         this.scene_3_a = false; // lets go to the zoo!
         this.scene_3_b = false; //what animal do i see?
-        this.scene_3_lion = false; // So cool! (stare at lion)
+        this.scene_3_lion = true; // So cool! (stare at lion)
         this.scene_3_cow = false; //so cool! (stare at cow)
         this.scene_4_a = false; //What should I eat?
         this.scene_4_orange = false; //orange table
@@ -1887,7 +1893,7 @@ export class Base_Scene extends Scene {
             .times(Mat4.translation(45, 0, 20));
 
         let Line_1_transform = new_origin.times(
-            Mat4.translation(5, 7, 2).times(Mat4.scale(0.5, 0.5, 0.5))
+            Mat4.translation(5, 7, 2).times(Mat4.scale(0.5, 0.5, 0.5)).times(Mat4.rotation(-0.05, 0, 1, 0))
         );
         this.shapes.text.set_string("Wow! So Majestic!", context.context);
         this.shapes.text.draw(
@@ -1929,7 +1935,6 @@ export class Base_Scene extends Scene {
 
         let miffy_cow_transform = Mat4.identity().times(
             Mat4.translation(-43, 0, 24.5).times(Mat4.scale(0.6, 0.6, 0.6)).times(Mat4.rotation(-5, 0, 1, 0))
-                // .times(Mat4.rotation(13.05, 0, 1, 0))
         );
         this.shapes.miffy.draw(context, program_state, miffy_cow_transform, shadow_pass ? this.shadowed_miffy : this.pure);
         this.shapes.sphere.draw(
@@ -2018,10 +2023,97 @@ export class Base_Scene extends Scene {
         }
     }
 
-    render_scene_4_a(context, program_state) {
-        let time = program_state.animation_time / 1000;
+    render_scene_4_a(context, program_state, shadow_pass, draw_light_source = false, draw_shadow = false) {
+        let light_position = this.light_position;
+        program_state.draw_shadow = draw_shadow;
+
+        if (draw_light_source && shadow_pass) {
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                Mat4.translation(
+                    light_position[0],
+                    light_position[1],
+                    light_position[2]
+                ).times(Mat4.scale(0.5, 0.5, 0.5)),
+                this.light_src.override({ color: light_color })
+            );
+        }
+
+        let miffy_food_transform = Mat4.identity().times(
+            Mat4.translation(20, 0, 6).times(Mat4.scale(0.7, 0.7, 0.7)).times(Mat4.rotation(-0.7, 0, 1, 0))
+        );
+
+        this.shapes.miffy.draw(
+            context,
+            program_state,
+            miffy_food_transform,
+            shadow_pass ? this.shadowed_miffy : this.pure
+        );
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            miffy_food_transform
+                .times(Mat4.translation(0.6, 0, 1.2))
+                .times(Mat4.scale(0.1, 0.15, 0.1)),
+            this.materials.black
+        );
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            miffy_food_transform
+                .times(Mat4.translation(-0.6, 0, 1.2))
+                .times(Mat4.scale(0.1, 0.15, 0.1)),
+            this.materials.black
+        );
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            miffy_food_transform
+                .times(Mat4.rotation(Math.PI / 6, 0, 0, 1))
+                .times(Mat4.translation(-0.25, -0.4, 1.15))
+                .times(Mat4.scale(0.15, 0.03, 0.1)),
+            this.materials.black
+        );
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            miffy_food_transform
+                .times(Mat4.rotation(-Math.PI / 6, 0, 0, 1))
+                .times(Mat4.translation(0.25, -0.4, 1.15))
+                .times(Mat4.scale(0.15, 0.03, 0.1)),
+            this.materials.black
+        );
+        if (this.scarf) {
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                miffy_food_transform
+                    .times(Mat4.translation(0, -1, 0))
+                    .times(Mat4.scale(1, 1, 1)),
+                shadow_pass
+                    ? this.scarf_red
+                        ? this.shadowed_red
+                        : (this.scarf_blue ? this.materials.royal : this.materials.clear)
+                    : this.pure
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                miffy_food_transform
+                    .times(Mat4.rotation(Math.PI / 8, -1, 0, 1))
+                    .times(Mat4.translation(0.15, -1.8, 0.6))
+                    .times(Mat4.scale(0.2, 0.5, 0.05)),
+                shadow_pass
+                    ? this.scarf_red
+                        ? this.shadowed_red
+                        : (this.scarf_blue ? this.materials.royal : this.materials.clear)
+                    : this.pure
+            );
+        }
+
         let Line_1_transform = Mat4.identity().times(
-            Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
+            Mat4.translation(10, 3, 3.5).times(Mat4.scale(0.3, 0.3, 0.3)).times(Mat4.rotation(-0.13, 0, 1, 0))
         );
         this.shapes.text.set_string("I'm hungry, what should I eat?", context.context);
         this.shapes.text.draw(
@@ -2031,9 +2123,8 @@ export class Base_Scene extends Scene {
             this.materials.text_image
         );
 
-        let Button_1 = Mat4.identity().times(
-            Mat4.scale(2.4,1,.01)
-                .times(Mat4.translation(-2, -1.6, 1500)));
+        let Button_1 = Mat4.identity().times(Mat4.translation(15, -1, 10))
+            .times(Mat4.rotation(-0.13, 0, 1, 0)).times(Mat4.scale(1.2,0.6,0.01));
         this.shapes.cube.draw(
             context,
             program_state,
@@ -2042,8 +2133,8 @@ export class Base_Scene extends Scene {
         );
 
         let Button_1_cover = Button_1.times(
-            Mat4.scale(.98,.95,.5)
-                .times(Mat4.translation(0, 0, 5)));
+            Mat4.scale(.98,.98,.5)
+                .times(Mat4.translation(0.01, 0, 5)));
         this.shapes.cube.draw(
             context,
             program_state,
@@ -2051,7 +2142,7 @@ export class Base_Scene extends Scene {
             this.materials.orange
         );
         let Line_2_transform = Button_1_cover
-            .times(Mat4.translation(-.55, -.16, 10)
+            .times(Mat4.translation(-.55, -.10, 10)
                 .times(Mat4.scale(.15,.3,1)));
         this.shapes.text.set_string("Orange", context.context);
         this.shapes.text.draw(
@@ -2061,9 +2152,8 @@ export class Base_Scene extends Scene {
             this.materials.text_image
         );
 
-        let Button_2 = Mat4.identity().times(
-            Mat4.scale(2.4,1,.01)
-                .times(Mat4.translation(2, -1.6, 1500)));
+        let Button_2 = Mat4.identity().times(Mat4.translation(20, -1, 10.7))
+            .times(Mat4.rotation(-0.13, 0, 1, 0)).times(Mat4.scale(1.2,0.6,0.01));
         this.shapes.cube.draw(
             context,
             program_state,
@@ -2071,8 +2161,8 @@ export class Base_Scene extends Scene {
             this.materials.black
         );
         let Button_2_cover = Button_2.times(
-            Mat4.scale(.98,.95,.5)
-                .times(Mat4.translation(0, 0, 5)));
+            Mat4.scale(.98,.98,.5)
+                .times(Mat4.translation(-0.01, 0, 5)));
         this.shapes.cube.draw(
             context,
             program_state,
@@ -2080,7 +2170,7 @@ export class Base_Scene extends Scene {
             this.materials.red
         );
         let Line_3_transform = Button_2_cover
-            .times(Mat4.translation(-.45, -.15, 10)
+            .times(Mat4.translation(-.45, -.10, 10)
                 .times(Mat4.scale(.15,.3,1)));
         this.shapes.text.set_string("Apple", context.context);
         this.shapes.text.draw(
@@ -2091,11 +2181,121 @@ export class Base_Scene extends Scene {
         );
     }
 
-    render_scene_4_orange(context, program_state) {
+    render_scene_4_orange(context, program_state, shadow_pass, draw_light_source, draw_shadow) {
         let time = program_state.animation_time / 1000;
-        let Line_1_transform = Mat4.identity().times(
-            Mat4.translation(11, 2.5, 5)
-                .times(Mat4.scale(.4,.4,.4)).times(Mat4.rotation(-.2,0,1,0))
+        let light_position = this.light_position;
+        program_state.draw_shadow = draw_shadow;
+
+        if (draw_light_source && shadow_pass) {
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                Mat4.translation(
+                    light_position[0],
+                    light_position[1],
+                    light_position[2]
+                ).times(Mat4.scale(0.5, 0.5, 0.5)),
+                this.light_src.override({ color: light_color })
+            );
+        }
+
+        let miffy_orange_transform = Mat4.identity().times(
+            Mat4.translation(20, 0, 6).times(Mat4.scale(0.7, 0.7, 0.7)).times(Mat4.rotation(-0.7, 0, 1, 0))
+        );
+        this.shapes.miffy.draw(
+            context,
+            program_state,
+            miffy_orange_transform,
+            shadow_pass ? this.shadowed_miffy : this.pure
+        );
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            miffy_orange_transform
+                .times(Mat4.translation(0.6, 0, 1.2))
+                .times(Mat4.scale(0.1, 0.15, 0.1)),
+            this.materials.black
+        );
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            miffy_orange_transform
+                .times(Mat4.translation(-0.6, 0, 1.2))
+                .times(Mat4.scale(0.1, 0.15, 0.1)),
+            this.materials.black
+        );
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            miffy_orange_transform
+                .times(Mat4.rotation(Math.PI / 6, 0, 0, 1))
+                .times(Mat4.translation(-0.25, -0.4, 1.15))
+                .times(Mat4.scale(0.15, 0.03, 0.1)),
+            this.materials.black
+        );
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            miffy_orange_transform
+                .times(Mat4.rotation(-Math.PI / 6, 0, 0, 1))
+                .times(Mat4.translation(0.25, -0.4, 1.15))
+                .times(Mat4.scale(0.15, 0.03, 0.1)),
+            this.materials.black
+        );
+        if (this.scarf) {
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                miffy_orange_transform
+                    .times(Mat4.translation(0, -1, 0))
+                    .times(Mat4.scale(1, 1, 1)),
+                shadow_pass
+                    ? this.scarf_red
+                        ? this.shadowed_red
+                        : (this.scarf_blue ? this.materials.royal : this.materials.clear)
+                    : this.pure
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                miffy_orange_transform
+                    .times(Mat4.rotation(Math.PI / 8, -1, 0, 1))
+                    .times(Mat4.translation(0.15, -1.8, 0.6))
+                    .times(Mat4.scale(0.2, 0.5, 0.05)),
+                shadow_pass
+                    ? this.scarf_red
+                        ? this.shadowed_red
+                        : (this.scarf_blue ? this.materials.royal : this.materials.clear)
+                    : this.pure
+            );
+        }
+
+        let orange_transform = Mat4.identity()
+            .times(Mat4.translation(17, 0.55, 7)
+            .times(Mat4.scale(0.8, 0.8, 0.8))
+        );
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            orange_transform,
+            shadow_pass ? this.shadowed_orange : this.pure
+        );
+
+        let plate_transform = Mat4.identity()
+            .times(Mat4.translation(17, -0.3, 7))
+            .times(Mat4.rotation(-11, 1, 0, 0))
+            .times(Mat4.scale(0.7, 0.7, 0.05));
+        this.shapes.sphere.draw(context, program_state, plate_transform, this.materials.miffy);
+
+        let stem_transform = Mat4.identity()
+            .times(Mat4.translation(17, 1.5, 7)).times(Mat4.scale(0.05, 0.15, 0.01));
+        this.shapes.cube.draw(context, program_state, stem_transform, this.materials.green);
+
+        let Line_1_transform = Mat4.identity()
+            .times(Mat4.translation(10, 3, 3.5)
+            .times(Mat4.scale(0.3, 0.3, 0.3))
+            .times(Mat4.rotation(-0.13, 0, 1, 0))
+            .times(Mat4.rotation(-0.13, 1, 0, 0))
         );
         this.shapes.text.set_string("So Yummy!", context.context);
         this.shapes.text.draw(
@@ -2105,8 +2305,9 @@ export class Base_Scene extends Scene {
             this.materials.text_image
         );
         let enter = Mat4.identity().times(
-            Mat4.translation(16.5, 2.6, 5)
-                .times(Mat4.scale(.3,.3,.3)).times(Mat4.rotation(-.2,0,1,0))
+            Mat4.translation(14.5, 2.8, 5)
+                .times(Mat4.scale(.15,.15,.15))
+                .times(Mat4.rotation(-.2,0,1,0))
         );
         this.shapes.text.set_string("[press enter]", context.context);
         if (Math.floor(time % 2) === 1) {
@@ -2119,12 +2320,118 @@ export class Base_Scene extends Scene {
         }
     }
 
-    render_scene_4_other(context, program_state) {
+    render_scene_4_other(context, program_state, shadow_pass, draw_light_source, draw_shadow) {
         let time = program_state.animation_time / 1000;
-        let Line_1_transform = Mat4.identity().times(
-            Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
+        let light_position = this.light_position;
+        program_state.draw_shadow = draw_shadow;
+
+        if (draw_light_source && shadow_pass) {
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                Mat4.translation(
+                    light_position[0],
+                    light_position[1],
+                    light_position[2]
+                ).times(Mat4.scale(0.5, 0.5, 0.5)),
+                this.light_src.override({ color: light_color })
+            );
+        }
+
+        let miffy_watermelon_transform = Mat4.identity().times(
+            Mat4.translation(20, 0, 6).times(Mat4.scale(0.7, 0.7, 0.7)).times(Mat4.rotation(-0.7, 0, 1, 0))
         );
-        this.shapes.text.set_string("other fruit", context.context);
+        this.shapes.miffy.draw(
+            context,
+            program_state,
+            miffy_watermelon_transform,
+            shadow_pass ? this.shadowed_miffy : this.pure
+        );
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            miffy_watermelon_transform
+                .times(Mat4.translation(0.6, 0, 1.2))
+                .times(Mat4.scale(0.1, 0.15, 0.1)),
+            this.materials.black
+        );
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            miffy_watermelon_transform
+                .times(Mat4.translation(-0.6, 0, 1.2))
+                .times(Mat4.scale(0.1, 0.15, 0.1)),
+            this.materials.black
+        );
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            miffy_watermelon_transform
+                .times(Mat4.rotation(Math.PI / 6, 0, 0, 1))
+                .times(Mat4.translation(-0.25, -0.4, 1.15))
+                .times(Mat4.scale(0.15, 0.03, 0.1)),
+            this.materials.black
+        );
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            miffy_watermelon_transform
+                .times(Mat4.rotation(-Math.PI / 6, 0, 0, 1))
+                .times(Mat4.translation(0.25, -0.4, 1.15))
+                .times(Mat4.scale(0.15, 0.03, 0.1)),
+            this.materials.black
+        );
+        if (this.scarf) {
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                miffy_watermelon_transform
+                    .times(Mat4.translation(0, -1, 0))
+                    .times(Mat4.scale(1, 1, 1)),
+                shadow_pass
+                    ? this.scarf_red
+                        ? this.shadowed_red
+                        : (this.scarf_blue ? this.materials.royal : this.materials.clear)
+                    : this.pure
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                miffy_watermelon_transform
+                    .times(Mat4.rotation(Math.PI / 8, -1, 0, 1))
+                    .times(Mat4.translation(0.15, -1.8, 0.6))
+                    .times(Mat4.scale(0.2, 0.5, 0.05)),
+                shadow_pass
+                    ? this.scarf_red
+                        ? this.shadowed_red
+                        : (this.scarf_blue ? this.materials.royal : this.materials.clear)
+                    : this.pure
+            );
+        }
+
+        let watermelon_transform = Mat4.identity()
+            .times(Mat4.translation(17, 1, 6).times(Mat4.scale(1.5, 1.5, 1.5))
+        );
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            watermelon_transform,
+            shadow_pass ? this.materials.watermelon : this.pure
+        );
+
+        let plate_transform = Mat4.identity()
+            .times(Mat4.translation(17, -0.3, 6.5))
+            .times(Mat4.rotation(-11, 1, 0, 0))
+            .times(Mat4.scale(0.7, 0.7, 0.05));
+        this.shapes.sphere.draw(context, program_state, plate_transform, this.materials.miffy);
+
+        let Line_1_transform = Mat4.identity()
+            .times(Mat4.translation(10, 3, 3.5)
+                .times(Mat4.scale(0.3, 0.3, 0.3))
+                .times(Mat4.rotation(-0.13, 0, 1, 0))
+                .times(Mat4.rotation(-0.13, 1, 0, 0))
+            );
+        this.shapes.text.set_string("This isn't an apple...", context.context);
         this.shapes.text.draw(
             context,
             program_state,
@@ -2132,7 +2439,9 @@ export class Base_Scene extends Scene {
             this.materials.text_image
         );
         let enter = Mat4.identity().times(
-            Mat4.translation(-7.5, 8, 5).times(Mat4.scale(0.4, 0.4, 0.4))
+            Mat4.translation(21, 3.2, 3.5)
+                .times(Mat4.scale(.2,.2,.2))
+                .times(Mat4.rotation(-.2,0,1,0))
         );
         this.shapes.text.set_string("[press enter]", context.context);
         if (Math.floor(time % 2) === 1) {
@@ -2637,18 +2946,18 @@ export class Base_Scene extends Scene {
             program_state.set_camera(
                 Mat4.look_at(vec3(17, 1.2, 16), vec3(18, 0, 8), vec3(0, 1, 0))
             );
-            this.render_scene_4_a(context, program_state);
+            this.render_scene_4_a(context, program_state, true);
             this.option_picker("scene_4_a");
         } else if (this.scene_4_orange) {
-            program_state.set_camera(
-                Mat4.look_at(vec3(17, 1.2, 16), vec3(18, 0, 8), vec3(0, 1, 0))
-            );
-            this.render_scene_4_orange(context, program_state);
+            // program_state.set_camera(
+            //     Mat4.look_at(vec3(17, 1.2, 16), vec3(18, 0, 8), vec3(0, 1, 0))
+            // );
+            this.render_scene_4_orange(context, program_state, true);
         } else if (this.scene_4_other) {
             program_state.set_camera(
                 Mat4.look_at(vec3(17, 1.2, 16), vec3(18, 0, 8), vec3(0, 1, 0))
             );
-            this.render_scene_4_other(context, program_state);
+            this.render_scene_4_other(context, program_state, true);
         } else if (this.scene_5_a) {
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
