@@ -2566,8 +2566,15 @@ export class Base_Scene extends Scene {
         this.shapes.sphere.draw(context, program_state,
             Mat4.identity().times(Mat4.translation(0, 3.5 + time - this.balloon_start, 7)).times(Mat4.scale(0.6, 0.75, 0.6)),
             this.materials.red);
+        this.render_miffy(context, program_state, true, (time-this.balloon_start));
 
-        this.render_miffy(context, program_state, true, (time-this.balloon_start))
+        this.shapes.sphere.draw(context, program_state,
+            Mat4.identity().times(Mat4.translation(2, 0.2 + time - this.balloon_start, 9)).times(Mat4.scale(0.03, 1.5, 0.03)),
+            this.materials.wall);
+        this.shapes.sphere.draw(context, program_state,
+            Mat4.identity().times(Mat4.translation(2, 1.5 + time - this.balloon_start, 9)).times(Mat4.scale(0.6, 0.75, 0.6)),
+            this.materials.royal);
+        this.render_dog(context, program_state, true, -2.36+time-this.balloon_start)
     }
 
     render_scene_final(context, program_state) {
@@ -2594,6 +2601,14 @@ export class Base_Scene extends Scene {
             Mat4.identity().times(Mat4.translation(0, 52.7 + time - this.final_start, 7)).times(Mat4.scale(0.6, 0.75, 0.6)),
             this.materials.red);
         this.render_miffy(context, program_state, true, 50+time-this.final_start);
+
+        this.shapes.sphere.draw(context, program_state,
+            Mat4.identity().times(Mat4.translation(2, 49.4 + time - this.final_start, 9)).times(Mat4.scale(0.03, 1.5, 0.03)),
+            this.materials.wall);
+        this.shapes.sphere.draw(context, program_state,
+            Mat4.identity().times(Mat4.translation(2, 50.7 + time - this.final_start, 9)).times(Mat4.scale(0.6, 0.75, 0.6)),
+            this.materials.royal);
+        this.render_dog(context, program_state, true, 48+time-this.final_start);
     }
     // render_clouds(context, program_state) {
     //     let time = program_state.animation_time / 1000;
@@ -2901,9 +2916,9 @@ export class Base_Scene extends Scene {
         }
     }
 
-    render_dog(context,program_state,shadow_pass){
+    render_dog(context,program_state,shadow_pass, y_position){
         let dog_transform = Mat4.identity().times(
-            Mat4.translation(2, -2.36, 9)
+            Mat4.translation(2, y_position, 9)
             // .times(Mat4.rotation(13.05, 0, 1, 0))
         );
         this.shapes.ball.draw(
@@ -3177,7 +3192,6 @@ export class Base_Scene extends Scene {
 
         //MAIN RENDERING
         this.render_scene(context, program_state, true, true, true);
-        this.render_dog(context,program_state,true);
         if (this.title) {
             this.render_clouds(context, program_state);
             program_state.set_camera(
@@ -3213,34 +3227,35 @@ export class Base_Scene extends Scene {
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_1(context, program_state);
-
+            this.render_dog(context,program_state,true, -2.36);
             //call function render_scene_1
         } else if (this.scene_1_b) {
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_1_b(context, program_state);
-
+            this.render_dog(context,program_state,true, -2.36);
             this.option_picker("scene_1_b");
         } else if (this.scene_1_yes) {
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_1_yes(context, program_state);
-
+            this.render_dog(context,program_state,true, -2.36);
             // call function render_scene_2
         } else if (this.scene_1_no) {
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_1_no(context,program_state);
+            this.render_dog(context,program_state,true, -2.36);
         } else if(this.scene_2_a){
             this.scarf = true;
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_2_a(context, program_state);
-
+            this.render_dog(context,program_state,true, -2.36);
             this.option_picker("scene_2_a");
         } else if (this.scene_2_red) {
             this.scarf = true;
@@ -3248,17 +3263,20 @@ export class Base_Scene extends Scene {
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_2_red(context, program_state);
+            this.render_dog(context,program_state,true, -2.36);
         } else if (this.scene_2_blue) {
             this.scarf = true;
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_2_blue(context, program_state);
+            this.render_dog(context,program_state,true, -2.36);
         } else if (this.scene_3_a) {
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
             );
             this.render_scene_3_a(context, program_state);
+            this.render_dog(context,program_state,true, -2.36);
         } else if (this.scene_3_b) {
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 24), vec3(-35, 2, 24), vec3(0, 1, 0))
@@ -3297,6 +3315,7 @@ export class Base_Scene extends Scene {
             );
             this.render_scene_5_a(context, program_state);
             this.render_miffy(context,program_state,true, 0)
+            this.render_dog(context,program_state,true, -2.36);
         } else if (this.scene_5_b) {
             program_state.set_camera(
                 Mat4.look_at(vec3(0, 0, 25), vec3(0, 2, 0), vec3(0, 1, 0))
