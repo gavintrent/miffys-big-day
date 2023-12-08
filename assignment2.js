@@ -434,7 +434,7 @@ export class Base_Scene extends Scene {
             }
             else if (this.scene_1_no) {
                 this.scene_1_no = false;
-                this.scene_final = true;
+                this.scene_2_a = true;
             }
             // else if (this.scene_2_a) {
             //     //Option Picker
@@ -2122,9 +2122,10 @@ export class Base_Scene extends Scene {
     render_scene_4_other(context, program_state) {
         let time = program_state.animation_time / 1000;
         let Line_1_transform = Mat4.identity().times(
-            Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
+            Mat4.translation(11, 2.5, 5)
+                .times(Mat4.scale(.4,.4,.4)).times(Mat4.rotation(-.2,0,1,0))
         );
-        this.shapes.text.set_string("other fruit", context.context);
+        this.shapes.text.set_string("So Yummy!", context.context);
         this.shapes.text.draw(
             context,
             program_state,
@@ -2132,7 +2133,8 @@ export class Base_Scene extends Scene {
             this.materials.text_image
         );
         let enter = Mat4.identity().times(
-            Mat4.translation(-7.5, 8, 5).times(Mat4.scale(0.4, 0.4, 0.4))
+            Mat4.translation(16.5, 2.6, 5)
+                .times(Mat4.scale(.3,.3,.3)).times(Mat4.rotation(-.2,0,1,0))
         );
         this.shapes.text.set_string("[press enter]", context.context);
         if (Math.floor(time % 2) === 1) {
