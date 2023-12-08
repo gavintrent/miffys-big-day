@@ -553,7 +553,7 @@ export class Base_Scene extends Scene {
                 this.scene_5_b = false;
                 this.scene_final = true;
 
-                this.playsound("default");
+                //this.playsound("default");
             }
             // else if(this.scene_2_a){
             //     this.scene_2_a = false;
@@ -1947,10 +1947,10 @@ export class Base_Scene extends Scene {
         let time = program_state.animation_time / 1000;
         // timing for animation
         if (this.scene3_move === -1) {
-            this.scene3_move = time + 8;
+            this.scene3_move = time;
         }
 
-        this.render_miffy_scene3a(context, program_state, true, 7 + 1.5 *  time - this.scene3_move);
+        this.render_miffy_scene3a(context, program_state, true, 5 + 1.5 *  (time - this.scene3_move));
 
         let Line_1_transform = Mat4.identity().times(
             Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
