@@ -437,6 +437,7 @@ export class Base_Scene extends Scene {
         this.final_start = -1;
         this.sky_start = -1;
         this.movie_start = -1;
+        this.scene3_move = -1;
     }
 
     playsound(current_scene) {
@@ -1329,8 +1330,8 @@ export class Base_Scene extends Scene {
         //let cloud_transform = Mat4.identity();
         //this.shapes.sphere.draw()
 
-        //MIFFY
-        {
+        // draw miffy
+        if (this.scene3_move === -1) {
             this.shapes.miffy.draw(
                 context,
                 program_state,
@@ -1948,6 +1949,13 @@ export class Base_Scene extends Scene {
 
     render_scene_3_a(context, program_state) {
         let time = program_state.animation_time / 1000;
+        // timing for animation
+        if (this.scene3_move === -1) {
+            this.scene3_move = time + 8;
+        }
+
+        this.render_miffy_scene3a(context, program_state, true, 7 + 1.5 *  time - this.scene3_move);
+
         let Line_1_transform = Mat4.identity().times(
             Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
         );
@@ -1973,8 +1981,9 @@ export class Base_Scene extends Scene {
     }
 
     render_scene_3_b(context, program_state) {
-        let Line_1_transform = Mat4.identity()
-            .times(Mat4.rotation(Math.PI / 2, 0, 1, 0))
+        // set flag back so miffy still renders
+        this.scene3_move = -1;
+        let Line_1_transform = Mat4.identity().times(Mat4.rotation(Math.PI/2, 0, 1, 0))
             .times(Mat4.translation(-39, 7.5, -20))
             .times(Mat4.scale(0.5, 0.5, 0.5));
         this.shapes.text.set_string(
@@ -2092,6 +2101,7 @@ export class Base_Scene extends Scene {
         draw_shadow = false
     ) {
         let time = program_state.animation_time / 1000;
+        let light_position = this.light_position;
         program_state.draw_shadow = draw_shadow;
 
         if (draw_light_source && shadow_pass) {
@@ -2189,10 +2199,7 @@ export class Base_Scene extends Scene {
                 .times(Mat4.scale(0.9, 0.9, 0.9))
                 .times(Mat4.rotation(13.05, 0, 1, 0))
         );
-        this.shapes.text.set_string(
-            "look! this cow is so cute!",
-            context.context
-        );
+        this.shapes.text.set_string("Look! This cow is so cute!", context.context);
         this.shapes.text.draw(
             context,
             program_state,
@@ -3204,6 +3211,77 @@ export class Base_Scene extends Scene {
                         : this.scarf_blue
                         ? this.materials.royal
                         : this.materials.clear
+                    : this.pure
+            );
+        }
+    }
+
+    render_miffy_scene3a(context, program_state, shadow_pass, z_pos) {
+        let miffy_transform = Mat4.identity().times(Mat4.translation(-z_pos / 3, 0, z_pos)).times(Mat4.rotation(-0.5, 0, 1, 0))
+        this.shapes.miffy.draw(
+            context,
+            program_state,
+            miffy_transform,
+            shadow_pass ? this.shadowed_miffy : this.pure
+        );
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            miffy_transform
+                .times(Mat4.translation(0.6, 0, 1.2))
+                .times(Mat4.scale(0.1, 0.15, 0.1)),
+            this.materials.black
+        );
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            miffy_transform
+                .times(Mat4.translation(-0.6, 0, 1.1))
+                .times(Mat4.scale(0.1, 0.15, 0.1)),
+            this.materials.black
+        );
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            miffy_transform
+                .times(Mat4.rotation(Math.PI / 6, 0, 0, 1))
+                .times(Mat4.translation(-0.25, -0.4, 1.15))
+                .times(Mat4.scale(0.15, 0.03, 0.1)),
+            this.materials.black
+        );
+        this.shapes.cube.draw(
+            context,
+            program_state,
+            miffy_transform
+                .times(Mat4.rotation(-Math.PI / 6, 0, 0, 1))
+                .times(Mat4.translation(0.25, -0.4, 1.15))
+                .times(Mat4.scale(0.15, 0.03, 0.1)),
+            this.materials.black
+        );
+        if (this.scarf) {
+            this.shapes.sphere.draw(
+                context,
+                program_state,
+                miffy_transform
+                    .times(Mat4.translation(0, -1, 0))
+                    .times(Mat4.scale(1, 1, 1)),
+                shadow_pass
+                    ? this.scarf_red
+                        ? this.shadowed_red
+                        : ( this.scarf_blue ? this.materials.royal : this.materials.clear)
+                    : this.pure
+            );
+            this.shapes.cube.draw(
+                context,
+                program_state,
+                miffy_transform
+                    .times(Mat4.rotation(Math.PI / 8, -1, 0, 1))
+                    .times(Mat4.translation(0.15, -1.8, 0.6))
+                    .times(Mat4.scale(0.2, 0.5, 0.05)),
+                shadow_pass
+                    ? this.scarf_red
+                        ? this.shadowed_red
+                        : ( this.scarf_blue ? this.materials.royal : this.materials.clear )
                     : this.pure
             );
         }
