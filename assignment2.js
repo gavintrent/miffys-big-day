@@ -398,7 +398,7 @@ export class Base_Scene extends Scene {
         this.init_ok = false;
 
         // *** FLAGS
-        this.title = false; //title screen
+        this.title = true; //title screen
         this.first_scene = false; //Im miffy intro
         this.scene_1_b = false; //Do you wanna join?
         this.scene_1_yes = false; //yay, im so excited
@@ -408,7 +408,7 @@ export class Base_Scene extends Scene {
         this.scene_2_blue = false; // I love it!( blue toggle)
         this.scene_3_a = false; // lets go to the zoo!
         this.scene_3_b = false; //what animal do i see?
-        this.scene_3_lion = true; // So cool! (stare at lion)
+        this.scene_3_lion = false; // So cool! (stare at lion)
         this.scene_3_cow = false; //so cool! (stare at cow)
         this.scene_4_a = false; //What should I eat?
         this.scene_4_orange = false; //orange table
