@@ -102,6 +102,18 @@ export class Base_Scene extends Scene {
                 specularity: 0,
                 color: hex_color("#027ddb"),
             }),
+            sky_2: new Material(new defs.Phong_Shader(), {
+                ambient: 0.9,
+                diffusivity: 0.1,
+                specularity: 0,
+                color: hex_color("#FF9720"),
+            }),
+            sky_3: new Material(new defs.Phong_Shader(), {
+                ambient: 0.9,
+                diffusivity: 0.1,
+                specularity: 0,
+                color: hex_color("#00285D"),
+            }),
             wood: new Material(new defs.Phong_Shader(), {
                 ambient: 0.9,
                 diffusivity: 0.1,
@@ -191,8 +203,8 @@ export class Base_Scene extends Scene {
 
         // ** Shadowed textures ** //
         this.cow_print = new Material(new Shadow_Textured_Phong_Shader(1), {
-            color: hex_color("#000000"),
-            ambient: 0.2,
+            color: hex_color("#f2f2f2"),
+            ambient: 0.3,
             diffusivity: 0.5,
             specularity: 0.5,
             color_texture: new Texture("assets/cow_print.png"),
@@ -672,16 +684,15 @@ export class Base_Scene extends Scene {
         }
 
         //SKY ** notice how this is not shaded
-        {
-            this.shapes.sphere.draw(
-                context,
-                program_state,
-                hills_transform
-                    .times(Mat4.translation(-20, 0, 0))
-                    .times(Mat4.scale(100, 100, 100)),
-                this.materials.sky
-            );
-        }
+        this.shapes.sphere.draw(
+            context,
+            program_state,
+            hills_transform
+                .times(Mat4.translation(-20, 0, 0))
+                .times(Mat4.scale(100, 100, 100)),
+            this.materials.sky
+        );
+
 
         //HOUSE
         {
@@ -1254,7 +1265,7 @@ export class Base_Scene extends Scene {
             context,
             program_state,
             cow_body_transform, // Body as an oval,
-            this.materials.plastic.override(cream)
+            shadow_pass ? this.cow_print : this.pure
         );
 
         // Draw the head
@@ -1266,7 +1277,7 @@ export class Base_Scene extends Scene {
             context,
             program_state,
             cow_head_transform,
-            this.materials.plastic.override(cream)
+            shadow_pass ? this.cow_print : this.pure
         );
 
         // Draw the legs
@@ -1315,7 +1326,7 @@ export class Base_Scene extends Scene {
                 context,
                 program_state,
                 cow_leg_transform,
-                this.materials.plastic.override(cream)
+                shadow_pass ? this.cow_print : this.pure
             );
         }
 
@@ -1333,7 +1344,7 @@ export class Base_Scene extends Scene {
                 context,
                 program_state,
                 cow_ear_transform,
-                this.materials.plastic.override(cream)
+                shadow_pass ? this.cow_print : this.pure
             );
         }
 
@@ -1513,9 +1524,11 @@ export class Base_Scene extends Scene {
     render_scene_1_b(context, program_state) {
         //this scene will ask if you are ready to embark on Miffy's big day with her
         // console.log("SCENE 1_B: WOULD YOU LIKE TO JOIN");
+
         let Line_1_transform = Mat4.identity().times(
             Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
         );
+
         this.shapes.text.set_string("Would you like to join?", context.context);
         this.shapes.text.draw(
             context,
@@ -2152,6 +2165,15 @@ export class Base_Scene extends Scene {
     }
 
     render_scene_5_a(context, program_state) {
+
+        this.shapes.sphere.draw(context, program_state,
+            Mat4.identity()
+                .times(Mat4.translation(-20, 0, 0))
+                .times(Mat4.scale(80, 80, 80)),
+            this.materials.sky_2
+        );
+
+
         let time = program_state.animation_time / 1000;
         let Line_1_transform = Mat4.identity().times(
             Mat4.translation(-15, 8, 5).times(Mat4.scale(0.5, 0.5, 0.5))
@@ -2181,6 +2203,14 @@ export class Base_Scene extends Scene {
     }
 
     render_scene_5_b(context, program_state) {
+
+        this.shapes.sphere.draw(context, program_state,
+            Mat4.identity()
+                .times(Mat4.translation(-20, 0, 0))
+                .times(Mat4.scale(80, 80, 80)),
+            this.materials.sky_2
+        );
+
         const time = program_state.animation_time / 1000;
         if (this.balloon_start === -1) {
             this.balloon_start = time;
@@ -2258,25 +2288,97 @@ export class Base_Scene extends Scene {
             this.materials.red);
         this.render_miffy(context, program_state, true, 50+time-this.final_start);
     }
+    // render_clouds(context, program_state) {
+    //     let time = program_state.animation_time / 1000;
+    //     let cloud_1_transform = Mat4.identity().times(
+    //         Mat4.translation(-7, 60, 0).times(Mat4.scale(3, 3, 3))
+    //     );
+    //     this.shapes.ball.draw(
+    //         context,
+    //         program_state,
+    //         cloud_1_transform,
+    //         this.materials.cloud
+    //     );
+    //     const cloud_scale = Mat4.scale(0.8, 0.8, 0.8);
+    //     const cloud_positions = [
+    //         [-1, 0, 0],
+    //         [-1, 0, -5],
+    //         [-2.5, -0.5, -2],
+    //         [-6, 0, -5],
+    //     ]; // Positions for the horns
+    //
+    //     for (let pos of cloud_positions) {
+    //         let cloud_transform = cloud_1_transform
+    //             .times(Mat4.translation(...pos))
+    //             .times(cloud_scale);
+    //         this.shapes.ball.draw(
+    //             context,
+    //             program_state,
+    //             cloud_transform,
+    //             this.materials.cloud
+    //         );
+    //     }
+    //
+    //     let cloud_2_transform = Mat4.identity().times(
+    //         Mat4.translation(30, 60, 5).times(Mat4.scale(3, 3, 3))
+    //     );
+    //     this.shapes.ball.draw(
+    //         context,
+    //         program_state,
+    //         cloud_2_transform,
+    //         this.materials.cloud
+    //     );
+    //     const cloud_scale_2 = Mat4.scale(0.8, 0.8, 0.8);
+    //     const cloud_positions_2 = [
+    //         [-1, 0, 0],
+    //         [-0.1, 0, -5],
+    //         [-0.5, -0.5, -2],
+    //         [3, 0, -5],
+    //     ];
+    //
+    //     for (let pos of cloud_positions_2) {
+    //         let cloud_transform = cloud_2_transform
+    //             .times(Mat4.translation(...pos))
+    //             .times(cloud_scale_2);
+    //         this.shapes.ball.draw(
+    //             context,
+    //             program_state,
+    //             cloud_transform,
+    //             this.materials.cloud
+    //         );
+    //     }
+    // }
+
     render_clouds(context, program_state) {
         let time = program_state.animation_time / 1000;
+        let sway_offset = Math.sin(time) * 2; // Swaying amount, adjust the multiplier for amplitude
+
+        // Define the base transformations for cloud 1 and cloud 2 with sway_offset
         let cloud_1_transform = Mat4.identity().times(
-            Mat4.translation(-7, 60, 0).times(Mat4.scale(3, 3, 3))
+            Mat4.translation(-7 + sway_offset, 60, 0).times(Mat4.scale(3, 3, 3))
         );
+        let cloud_2_transform = Mat4.identity().times(
+            Mat4.translation(30 + sway_offset, 60, 5).times(Mat4.scale(3, 3, 3))
+        );
+
+        // Common cloud scale
+        const cloud_scale = Mat4.scale(0.8, 0.8, 0.8);
+
+        // Positions for cloud 1
+        const cloud_positions = [
+            [-1, 0, 0],
+            [-1, 0, -5],
+            [-2.5, -0.5, -2],
+            [-6, 0, -5],
+        ];
+
+        // Draw cloud 1
         this.shapes.ball.draw(
             context,
             program_state,
             cloud_1_transform,
             this.materials.cloud
         );
-        const cloud_scale = Mat4.scale(0.8, 0.8, 0.8); // Scale for the horns
-        const cloud_positions = [
-            [-1, 0, 0],
-            [-1, 0, -5],
-            [-2.5, -0.5, -2],
-            [-6, 0, -5],
-        ]; // Positions for the horns
-
         for (let pos of cloud_positions) {
             let cloud_transform = cloud_1_transform
                 .times(Mat4.translation(...pos))
@@ -2289,27 +2391,25 @@ export class Base_Scene extends Scene {
             );
         }
 
-        let cloud_2_transform = Mat4.identity().times(
-            Mat4.translation(30, 60, 5).times(Mat4.scale(3, 3, 3))
-        );
+        // Positions for cloud 2
+        const cloud_positions_2 = [
+            [-1, 0, 0],
+            [-0.1, 0, -5],
+            [-0.5, -0.5, -2],
+            [3, 0, -5],
+        ];
+
+        // Draw cloud 2
         this.shapes.ball.draw(
             context,
             program_state,
             cloud_2_transform,
             this.materials.cloud
         );
-        const cloud_scale_2 = Mat4.scale(0.8, 0.8, 0.8); // Scale for the horns
-        const cloud_positions_2 = [
-            [-1, 0, 0],
-            [-0.1, 0, -5],
-            [-0.5, -0.5, -2],
-            [3, 0, -5],
-        ]; // Positions for the horns
-
         for (let pos of cloud_positions_2) {
             let cloud_transform = cloud_2_transform
                 .times(Mat4.translation(...pos))
-                .times(cloud_scale_2);
+                .times(cloud_scale);
             this.shapes.ball.draw(
                 context,
                 program_state,
@@ -2896,6 +2996,12 @@ export class Base_Scene extends Scene {
             );
             this.render_scene_5_b(context, program_state);
         } else if (this.scene_final) {
+            this.shapes.sphere.draw(context, program_state,
+                Mat4.identity()
+                    .times(Mat4.translation(-20, 0, 0))
+                    .times(Mat4.scale(80, 80, 80)),
+                this.materials.sky_3
+            );
             program_state.set_camera(
                 Mat4.look_at(vec3(10, 55, 30), vec3(10, 55, 0), vec3(0, 1, 0))
             );
