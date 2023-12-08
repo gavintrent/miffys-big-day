@@ -2251,10 +2251,10 @@ export class Base_Scene extends Scene {
             this.materials.text_image
         );
         this.shapes.sphere.draw(context, program_state,
-            Mat4.identity().times(Mat4.translation(0, 51.4 + time - this.balloon_start, 7)).times(Mat4.scale(0.03, 2.1, 0.03)),
+            Mat4.identity().times(Mat4.translation(0, 51.4 + time - this.final_start, 7)).times(Mat4.scale(0.03, 2.1, 0.03)),
             this.materials.wall);
         this.shapes.sphere.draw(context, program_state,
-            Mat4.identity().times(Mat4.translation(0, 52.7 + time - this.balloon_start, 7)).times(Mat4.scale(0.6, 0.75, 0.6)),
+            Mat4.identity().times(Mat4.translation(0, 52.7 + time - this.final_start, 7)).times(Mat4.scale(0.6, 0.75, 0.6)),
             this.materials.red);
         this.render_miffy(context, program_state, true, 50+time-this.final_start);
     }
