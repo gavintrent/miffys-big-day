@@ -398,8 +398,8 @@ export class Base_Scene extends Scene {
         this.init_ok = false;
 
         // *** FLAGS
-        this.title = false; //title screen
-        this.first_scene = true; //Im miffy intro
+        this.title = true; //title screen
+        this.first_scene = false; //Im miffy intro
         this.scene_1_b = false; //Do you wanna join?
         this.scene_1_yes = false; //yay, im so excited
         this.scene_1_no = false; //oh, thats too bad
@@ -3492,12 +3492,12 @@ export class Base_Scene extends Scene {
             var duration = 3; // Duration in seconds
             var time3 = program_state.animation_time / 1000; // Time in seconds
 
-            if (this.sky_start == -1) {
-                this.sky_start = time3;
+            if (this.movie_start == -1) {
+                this.movie_start = time3;
             }
 
             // Calculate interpolation factor
-            var factor = Math.min((time3 - this.sky_start) / duration, 1); // Clamp between 0 and 1
+            var factor = Math.min((time3 - this.movie_start) / duration, 1); // Clamp between 0 and 1
 
             // Interpolate between the colors
             var interpolatedColor = {
