@@ -410,7 +410,7 @@ export class Base_Scene extends Scene {
         this.scene_3_b = false; //what animal do i see?
         this.scene_3_lion = false; // So cool! (stare at lion)
         this.scene_3_cow = false; //so cool! (stare at cow)
-        this.scene_4_a = false; //What should I eat?
+        this.scene_4_a = true; //What should I eat?
         this.scene_4_orange = false; //orange table
         this.scene_4_other = false; //other food on the table
         this.scene_5_a = false; //Wow what a long day
@@ -1326,12 +1326,8 @@ export class Base_Scene extends Scene {
             );
         }
 
-        //CLOUDS
-        //let cloud_transform = Mat4.identity();
-        //this.shapes.sphere.draw()
-
         // draw miffy
-        if (this.scene3_move === -1) {
+        if (this.scene3_move === -1 && this.final_start === -1 && this.balloon_start === -1) {
             this.shapes.miffy.draw(
                 context,
                 program_state,
@@ -2324,7 +2320,7 @@ export class Base_Scene extends Scene {
         }
 
         let Line_1_transform = Mat4.identity().times(
-            Mat4.translation(10, 3, 3.5)
+            Mat4.translation(10.3, 3, 3.5)
                 .times(Mat4.scale(0.3, 0.3, 0.3))
                 .times(Mat4.rotation(-0.13, 0, 1, 0))
         );
@@ -2534,7 +2530,7 @@ export class Base_Scene extends Scene {
         );
 
         let Line_1_transform = Mat4.identity().times(
-            Mat4.translation(10, 3, 3.5)
+            Mat4.translation(10.3, 3, 3.5)
                 .times(Mat4.scale(0.3, 0.3, 0.3))
                 .times(Mat4.rotation(-0.13, 0, 1, 0))
                 .times(Mat4.rotation(-0.13, 1, 0, 0))
@@ -2685,7 +2681,7 @@ export class Base_Scene extends Scene {
         );
 
         let Line_1_transform = Mat4.identity().times(
-            Mat4.translation(10, 3, 3.5)
+            Mat4.translation(10.3, 3.1, 3.5)
                 .times(Mat4.scale(0.3, 0.3, 0.3))
                 .times(Mat4.rotation(-0.13, 0, 1, 0))
                 .times(Mat4.rotation(-0.13, 1, 0, 0))
@@ -2853,6 +2849,10 @@ export class Base_Scene extends Scene {
     sky_color() {}
 
     render_scene_final(context, program_state) {
+        let time = program_state.animation_time / 1000;
+        if (this.final_start === -1) {
+            this.final_start = time;
+        }
         function hexToRGB(hex) {
             var r = parseInt(hex.substring(1, 3), 16) / 255;
             var g = parseInt(hex.substring(3, 5), 16) / 255;
@@ -2896,11 +2896,6 @@ export class Base_Scene extends Scene {
             this.materials.sky_3.override({ color: sun_color })
         );
 
-        let time = program_state.animation_time / 1000;
-
-        if (this.final_start === -1) {
-            this.final_start = time;
-        }
         this.render_clouds(context, program_state, true);
         let title_transform = Mat4.identity()
             .times(Mat4.translation(2.5, 57, 0))
