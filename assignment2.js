@@ -429,6 +429,27 @@ export class Base_Scene extends Scene {
         //TIME
         this.balloon_start = -1;
         this.final_start = -1;
+        this.sky_start = -1;
+        this.movie_start = -1;
+    }
+
+    playsound(current_scene) {
+        let speak = new Audio('./assets/miffy_speaks.mp3');
+
+        if (current_scene == "scene_1_b") {
+            // set picking mode to true
+            speak.play()
+        } else if (current_scene == "scene_2_a") {
+            speak.play()
+
+        } else if (current_scene == "scene_3_b") {
+            speak.play()
+
+        } else if (current_scene == "scene_4_a") {
+            speak.play()
+        } else if (current_scene == "default") {
+            speak.play()
+        }
     }
 
     make_control_panel() {
@@ -436,9 +457,13 @@ export class Base_Scene extends Scene {
             if (this.title) {
                 this.title = false;
                 this.first_scene = true;
+
+                this.playsound("default")
             } else if (this.first_scene) {
                 this.first_scene = false;
                 this.scene_1_b = true;
+
+                this.playsound("default")
             }
             // else if(this.scene_1_b){
             //     this.scene_1_b = false;
@@ -447,10 +472,16 @@ export class Base_Scene extends Scene {
             else if (this.scene_1_yes) {
                 this.scene_1_yes = false;
                 this.scene_2_a = true;
+
+                this.playsound("default")
+
             }
             else if (this.scene_1_no) {
                 this.scene_1_no = false;
                 this.scene_2_a = true;
+
+                this.playsound("default")
+
             }
             // else if (this.scene_2_a) {
             //     //Option Picker
@@ -460,15 +491,23 @@ export class Base_Scene extends Scene {
                 this.scene_2_red = false;
                 this.scene_3_a = true;
 
+                this.playsound("default")
+
                 //no current mapping to blue
             } else if (this.scene_2_blue) {
                 this.scene_2_blue = false;
                 this.scene_3_a = true;
+
+                this.playsound("default")
+
             } else if (this.scene_3_a) {
                 this.scene_3_a = false;
                 this.scene_3_b = true;
                 this.miffy_transform = this.miffy_transform.times(Mat4.translation(0, 0, -7))
                     .times(Mat4.rotation(Math.PI/2, 0, 1, 0)).times(Mat4.translation(-24, 0, -20));
+
+                this.playsound("default")
+
             }
             // else if (this.scene_3_b) {
             //         this.scene_3_b = false;
@@ -477,9 +516,15 @@ export class Base_Scene extends Scene {
             else if (this.scene_3_lion) {
                 this.scene_3_lion = false;
                 this.scene_4_a = true;
+
+                this.playsound("default")
+
             } else if (this.scene_3_cow) {
                 this.scene_3_cow = false;
                 this.scene_4_a = true;
+
+                this.playsound("default")
+
             }
             //     else if (this.scene_4_a) {
             //     //Option Picker
@@ -490,16 +535,28 @@ export class Base_Scene extends Scene {
                 this.scene_4_orange = false;
                 this.scene_5_a = true;
 
+                this.playsound("default")
+
+
                 //No current mapping to other fruit
             } else if (this.scene_4_other) {
                 this.scene_4_other = false;
                 this.scene_5_a = true;
+
+                this.playsound("default")
+
             } else if (this.scene_5_a) {
                 this.scene_5_a = false;
                 this.scene_5_b = true;
+
+                this.playsound("default")
+
             } else if (this.scene_5_b) {
                 this.scene_5_b = false;
                 this.scene_final = true;
+
+                this.playsound("default")
+
             }
             // else if(this.scene_2_a){
             //     this.scene_2_a = false;
@@ -2263,7 +2320,49 @@ export class Base_Scene extends Scene {
         this.render_miffy(context, program_state, true, (time-this.balloon_start))
     }
 
+    sky_color() {
+
+    }
+
     render_scene_final(context, program_state) {
+
+        function hexToRGB(hex) {
+            var r = parseInt(hex.substring(1, 3), 16) / 255;
+            var g = parseInt(hex.substring(3, 5), 16) / 255;
+            var b = parseInt(hex.substring(5, 7), 16) / 255;
+            return { r, g, b };
+        }
+
+        var startColor = hexToRGB("#FF9720"); // Orange
+        var endColor = hexToRGB("#00285D");   // Blue
+        var duration = 3;                     // Duration in seconds
+        var time2 = program_state.animation_time / 1000; // Time in seconds
+
+        if (this.sky_start == -1) {
+            this.sky_start = time2;
+        }
+
+        // Calculate interpolation factor
+        var factor = Math.min((time2 - this.sky_start) / duration, 1); // Clamp between 0 and 1
+
+        // Interpolate between the colors
+        var interpolatedColor = {
+            r: startColor.r + (endColor.r - startColor.r) * factor,
+            g: startColor.g + (endColor.g - startColor.g) * factor,
+            b: startColor.b + (endColor.b - startColor.b) * factor
+        };
+
+        // Create the color object
+        var sun_color = color(interpolatedColor.r, interpolatedColor.g, interpolatedColor.b, 1);
+
+        this.shapes.sphere.draw(context, program_state,
+            Mat4.identity()
+                .times(Mat4.translation(-20, 0, 0))
+                .times(Mat4.scale(80, 80, 80)),
+            this.materials.sky_3.override({color: sun_color})
+        );
+
+
         let time = program_state.animation_time / 1000;
 
         if (this.final_start === -1) {
@@ -2421,8 +2520,12 @@ export class Base_Scene extends Scene {
 
     option_picker(current_scene) {
         console.log("in option picker");
+
+
         if (current_scene == "scene_1_b") {
             // set picking mode to true
+
+
             this.is_picking = true;
 
             if (this.left_button) {
@@ -2731,12 +2834,16 @@ export class Base_Scene extends Scene {
 
 
 
+
     display(context, program_state) {
         // display():  Called once per frame of animation. Here, the base class's display only does
         // some initial setup.
-
         const t = program_state.animation_time;
         const gl = context.context;
+
+
+        // let sun_rgb = ((1/2) + Math.sin((2 * Math.PI / 10) * t + (3 * Math.PI/2)) * (1/2)) ;
+        // var sun_color = color(1, sun_rgb, sun_rgb, 1);
 
         if (!this.init_ok) {
             const ext = gl.getExtension("WEBGL_depth_texture");
@@ -2872,6 +2979,43 @@ export class Base_Scene extends Scene {
         this.render_scene(context, program_state, true, true, true);
         this.render_dog(context,program_state,true);
         if (this.title) {
+
+            function hexToRGB(hex) {
+                var r = parseInt(hex.substring(1, 3), 16) / 255;
+                var g = parseInt(hex.substring(3, 5), 16) / 255;
+                var b = parseInt(hex.substring(5, 7), 16) / 255;
+                return { r, g, b };
+            }
+
+            var startColor = hexToRGB("#FFCFF7"); // Pink
+            var endColor = hexToRGB("#027ddb");   // Blue
+            var duration = 3;                     // Duration in seconds
+            var time3 = program_state.animation_time / 1000; // Time in seconds
+
+            if (this.sky_start == -1) {
+                this.sky_start = time3;
+            }
+
+            // Calculate interpolation factor
+            var factor = Math.min((time3 - this.sky_start) / duration, 1); // Clamp between 0 and 1
+
+            // Interpolate between the colors
+            var interpolatedColor = {
+                r: startColor.r + (endColor.r - startColor.r) * factor,
+                g: startColor.g + (endColor.g - startColor.g) * factor,
+                b: startColor.b + (endColor.b - startColor.b) * factor
+            };
+
+            // Create the color object
+            var sun_color = color(interpolatedColor.r, interpolatedColor.g, interpolatedColor.b, 1);
+
+            this.shapes.sphere.draw(context, program_state,
+                Mat4.identity()
+                    .times(Mat4.translation(-20, 0, 0))
+                    .times(Mat4.scale(80, 80, 80)),
+                this.materials.sky_3.override({color: sun_color})
+            );
+
             this.render_clouds(context, program_state);
             program_state.set_camera(
                 Mat4.look_at(vec3(10, 55, 30), vec3(10, 55, 0), vec3(0, 1, 0))
@@ -2996,12 +3140,7 @@ export class Base_Scene extends Scene {
             );
             this.render_scene_5_b(context, program_state);
         } else if (this.scene_final) {
-            this.shapes.sphere.draw(context, program_state,
-                Mat4.identity()
-                    .times(Mat4.translation(-20, 0, 0))
-                    .times(Mat4.scale(80, 80, 80)),
-                this.materials.sky_3
-            );
+
             program_state.set_camera(
                 Mat4.look_at(vec3(10, 55, 30), vec3(10, 55, 0), vec3(0, 1, 0))
             );
